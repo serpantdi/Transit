@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vedic Neon Cosmic Chakra - Universal Responsive Matrix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=500;700;800&display=swap');
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            overscroll-behavior: none;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: radial-gradient(circle at center, #0c152b 0%, #050814 60%, #010206 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            box-sizing: border-box;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(1px 1px at 25px 35px, #ffffff 100%, transparent),
+                radial-gradient(1.5px 1.5px at 150px 50px, #e0f7fa 100%, transparent),
+                radial-gradient(2px 2px at 420px 400px, #fef08a 100%, transparent);
+            background-size: 550px 550px;
+            opacity: 0.55;
+        }
+        
+        .chart-viewport-container {
+            width: 100%;
+            max-width: 960px;
+            aspect-ratio: 1.15 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+            padding: 4px; 
+            box-sizing: border-box;
+            margin-top: -4px;
+        }
+
+        #chart {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: visible; 
+        }
+
+        .draggable-planet { 
+            touch-action: none; 
+            cursor: grab;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+        }
+        
+        .draggable-planet:active { 
+            cursor: grabbing; 
+        }
+        
+        .smooth-glide { 
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        .dragging-active {
+            transition: none !important;
+        }
+
+        @keyframes spin-earth {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .rotating-earth { animation: spin-earth 30s linear infinite; }
+
+        @keyframes sun-shimmer {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.88; }
+            50% { transform: scale(1.12) rotate(15deg); opacity: 1; filter: drop-shadow(0 0 15px #ffffff); }
+        }
+        .sun-ray-matrix { animation: sun-shimmer 4s ease-in-out infinite; transform-origin: 0px 0px; }
+
+        @keyframes intense-white-glow {
+            0%, 100% { filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 20px #fff7ed) opacity(0.95); }
+            50% { filter: drop-shadow(0 0 16px #ffffff) drop-shadow(0 0 35px #ffedd5) opacity(1); }
+        }
+        .glow-sun-white { animation: intense-white-glow 2s ease-in-out infinite; }
+        
+        @keyframes rahu-pulse {
+            0%, 100% { filter: drop-shadow(0 0 4px #ff0055); }
+            50% { filter: drop-shadow(0 0 14px #ff0055); }
+        }
+        .glow-rahu { animation: rahu-pulse 3s ease-in-out infinite; }
+
+        .neon-text-cyan {
+            color: #e0f7fa;
+            text-shadow: 0 0 4px #06b6d4, 0 0 10px #06b6d4;
+        }
+        
+        .neon-text-amber {
+            color: #fffdeb;
+            text-shadow: 0 0 4px #fbbf24, 0 0 10px #fbbf24;
+        }
+        
+        .neon-text-emerald {
+            color: #ecfdf5;
+            text-shadow: 0 0 4px #34d399, 0 0 10px #10b981;
+        }
+
+        .hud-text {
+            font-size: 11px;
+            font-weight: 800;
+            fill: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        /* Scaled look for text inside mobile bounds */
+        @media (max-width: 768px) {
+            .hud-text {
+                font-size: 13px; /* Slightly punchier font size value relative to targeted tight view bounds */
+            }
+        }
+
+        .aspect-laser {
+            opacity: 0.6;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+        }
+    </style>
+</head>
+<body class="text-slate-100 p-2">
+
+    <!-- Header Section -->
+    <div class="text-center w-full mb-1 mt-1 select-none">
+        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight neon-text-cyan">नवग्रह • Neon Cosmic Chakra</h1>
+        <p class="text-[9px] tracking-widest uppercase mt-0.5 font-black neon-text-cyan">Dynamic Retrograde Timeline Scrubber</p>
+    </div>
+
+    <!-- State Dashboard HUD -->
+    <div class="backdrop-blur-md bg-slate-950/50 p-2 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.25)] border-2 border-cyan-400/40 w-full max-w-sm mb-2 text-center z-10 select-none">
+        <div class="text-[9px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="time-direction-label">Celestial Epoch Horizon</div>
+        <div id="status-display" class="text-base font-black tracking-wide neon-text-amber">Establishing Ephemeris Matrix...</div>
+    </div>
+
+    <!-- Scale Boundary Container -->
+    <div class="chart-viewport-container">
+        <svg id="chart" viewBox="-30 0 860 800">
+            <defs>
+                <filter id="neon-glow-cyan" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="3.5" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+                <filter id="neon-glow-amber" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+                
+                <radialGradient id="sphere-shading" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+                    <stop offset="60%" stop-color="#000000" stop-opacity="0"/>
+                    <stop offset="100%" stop-color="#000000" stop-opacity="0.9"/>
+                </radialGradient>
+
+                <radialGradient id="grad-sun-core" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ffffff" />
+                    <stop offset="70%" stop-color="#ffffff" />
+                    <stop offset="100%" stop-color="#fffbeb" stop-opacity="0.9" />
+                </radialGradient>
+
+                <linearGradient id="grad-sun-ray" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                    <stop offset="25%" stop-color="#fffbeb" stop-opacity="0.8" />
+                    <stop offset="60%" stop-color="#ffedd5" stop-opacity="0.25" />
+                    <stop offset="100%" stop-color="#fffdf5" stop-opacity="0" />
+                </linearGradient>
+
+                <linearGradient id="grad-mercury" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ff7c43" />
+                    <stop offset="30%" stop-color="#5c2c16" />
+                    <stop offset="55%" stop-color="#ff6b2b" />
+                    <stop offset="80%" stop-color="#3d1908" />
+                    <stop offset="100%" stop-color="#210b02" />
+                </linearGradient>
+                
+                <radialGradient id="grad-moon" cx="40%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#ffffff" /><stop offset="60%" stop-color="#cbd5e1" /><stop offset="100%" stop-color="#475569" />
+                </radialGradient>
+                <radialGradient id="grad-venus" cx="45%" cy="45%" r="55%">
+                    <stop offset="0%" stop-color="#fef9c3" /><stop offset="50%" stop-color="#eab308" /><stop offset="100%" stop-color="#451a03" />
+                </radialGradient>
+                <radialGradient id="grad-mars" cx="45%" cy="45%" r="55%">
+                    <stop offset="0%" stop-color="#fecaca" /><stop offset="45%" stop-color="#ef4444" /><stop offset="100%" stop-color="#450a0a" />
+                </radialGradient>
+                
+                <linearGradient id="grad-jupiter" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ffedd5" />
+                    <stop offset="25%" stop-color="#f97316" />
+                    <stop offset="45%" stop-color="#ffedd5" />
+                    <stop offset="55%" stop-color="#ea580c" />
+                    <stop offset="80%" stop-color="#c2410c" />
+                    <stop offset="100%" stop-color="#3a1207" />
+                </linearGradient>
+                
+                <radialGradient id="grad-saturn" cx="45%" cy="45%" r="55%">
+                    <stop offset="0%" stop-color="#ffedd5" /><stop offset="60%" stop-color="#d97706" /><stop offset="100%" stop-color="#2d1303" />
+                </radialGradient>
+            </defs>
+
+            <circle cx="400" cy="400" r="260" fill="#030611" opacity="0.9" />
+
+            <circle cx="400" cy="400" r="232" stroke="#06b6d4" stroke-width="3" fill="none" filter="url(#neon-glow-cyan)" opacity="0.85"/>
+            <circle cx="400" cy="400" r="232" stroke="#ffffff" stroke-width="0.75" fill="none" opacity="0.95"/>
+            <circle cx="400" cy="400" r="65" stroke="#06b6d4" stroke-width="2.5" fill="none" filter="url(#neon-glow-cyan)" opacity="0.75"/>
+            
+            <g id="planet-tracks"></g>
+            <g id="house-lines"></g>
+            <g id="aspect-lines-layer"></g>
+            <g id="pointer-lines-layer"></g>
+            
+            <circle cx="400" cy="400" r="44" fill="#3b82f6" opacity="0.15" filter="blur(4px)"/>
+            <circle cx="400" cy="400" r="35" stroke="#3b82f6" stroke-width="2" fill="none" filter="url(#neon-glow-cyan)"/>
+            
+            <g id="earth-center" class="rotating-earth" style="transform-origin: 400px 400px;">
+                <circle cx="400" cy="400" r="32" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1.5"/>
+                <g transform="translate(400, 400) scale(1.15) translate(-400, -400)">
+                    <path d="M375,390 C372,380 386,374 393,377 C396,380 390,390 375,390 Z" fill="#059669" />
+                    <path d="M403,380 C410,374 424,377 427,386 C421,395 406,390 403,380 Z" fill="#10b981" />
+                    <path d="M386,407 C383,416 397,423 406,418 C412,413 403,401 386,407 Z" fill="#059669" />
+                    <path d="M412,403 C418,398 427,405 424,413 C416,421 406,410 412,403 Z" fill="#10b981" />
+                </g>
+                <circle cx="400" cy="400" r="32" fill="url(#sphere-shading)"/>
+                <circle cx="400" cy="400" r="3" fill="#ffffff" opacity="0.9"/>
+            </g>
+            <g id="planets-layer"></g>
+            <g id="external-hud-layer"></g>
+        </svg>
+    </div>
+
+    <script>
+        const center = { x: 400, y: 400 };
+        const statusDisplay = document.getElementById('status-display');
+        const houseLinesGroup = document.getElementById('house-lines');
+        const planetTracksGroup = document.getElementById('planet-tracks');
+        const planetsLayer = document.getElementById('planets-layer');
+        const pointerLinesLayer = document.getElementById('pointer-lines-layer');
+        const aspectLinesLayer = document.getElementById('aspect-lines-layer');
+        const externalHudLayer = document.getElementById('external-hud-layer');
+        const chart = document.getElementById('chart');
+
+        const API_BASE = `http://${window.location.host}`;
+
+        // Global dynamic configuration parameter
+        let viewMatrix = { xMin: -30, yMin: 0, width: 860, height: 800 };
+        let dynamicLabelRadius = 285; // Standard distance value out from core structure
+        
+        function adaptViewportDimensions() {
+    if (window.innerWidth > 768) {
+        // Absolute Max PC Viewport: Focuses entirely on the core wheel
+        viewMatrix = { xMin: -20, yMin: 120, width: 840, height: 690 };
+        dynamicLabelRadius = 278;
+        document.querySelector('.chart-viewport-container').style.aspectRatio = "1.21 / 1";
+    } else {
+        // Absolute Max Mobile Viewport: Tightest mathematical crop around the wheel matrix
+        viewMatrix = { xMin: 78, yMin: 78, width: 644, height: 644 };
+        dynamicLabelRadius = 252; // Tucks labels tightly into the outer tracks so they stay on screen
+        document.querySelector('.chart-viewport-container').style.aspectRatio = "1 / 1";
+    }
+    chart.setAttribute("viewBox", `${viewMatrix.xMin} ${viewMatrix.yMin} ${viewMatrix.width} ${viewMatrix.height}`);
+    if (Object.keys(currentLongitudes).length > 0) {
+        layoutHUDsAntiCollision();
+    }
+}
+        
+        window.addEventListener('resize', adaptViewportDimensions);
+        // Instant initialization call sequence execution
+        setTimeout(adaptViewportDimensions, 50);
+
+        const ZODIAC_SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+        const NAKSHATRAS = [
+            "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha",
+            "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+            "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+        ];
+
+        const PLANET_CONFIGS = {
+            "moon":    { label: "MOON", grad: "url(#grad-moon)", radius: 85, size: 10, type: "moon", color: "#e2e8f0", degreesPerDay: 13.176 },
+            "mercury": { label: "MERC", grad: "url(#grad-mercury)", radius: 103, size: 9, type: "sphere", color: "#ff7c43", degreesPerDay: 1.2 },
+            "venus":   { label: "VENUS", grad: "url(#grad-venus)", radius: 121, size: 11, type: "sphere", color: "#fef9c3", degreesPerDay: 1.2 },
+            "sun":     { label: "SUN", grad: null, radius: 139, size: 16, type: "sun", color: "#ffffff", degreesPerDay: 0.9856 },
+            "mars":    { label: "MARS", grad: "url(#grad-mars)", radius: 157, size: 10, type: "sphere", color: "#ef4444", degreesPerDay: 0.524 },
+            "jupiter": { label: "JUP", grad: "url(#grad-jupiter)", radius: 175, size: 19, type: "jupiter", color: "#fbbf24", degreesPerDay: 0.083 },
+            "saturn":  { label: "SAT", grad: "url(#grad-saturn)", radius: 195, size: 16, type: "saturn", color: "#c084fc", degreesPerDay: 0.0335 },
+            "rahu":    { label: "RAHU", grad: null, radius: 215, size: 24, type: "dragon-head", color: "#f43f5e", degreesPerDay: -0.0529 },
+            "ketu":    { label: "KETU", grad: null, radius: 233, size: 24, type: "dragon-tail", color: "#34d399", degreesPerDay: -0.0529 }
+        };
+
+        const PLANET_ASPECTS = {
+            "sun": [7], "moon": [7], "mercury": [7], "venus": [7],
+            "mars": [4, 7, 8], "jupiter": [5, 7, 9], "saturn": [3, 7, 10],
+            "rahu": [5, 7, 9], "ketu": [5, 7, 9]
+        };
+
+        let isDragging = false;
+        let activePlanet = null;
+        let currentChartDateString = "";
+        let lastAngle = 0;
+        let currentLongitudes = {};
+        let isProcessing = false;
+
+        function getPointerVector(e) {
+            const rect = chart.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : (e.clientX || 0);
+            const clientY = e.touches ? e.touches[0].clientY : (e.clientY || 0);
+            
+            const rawX = clientX - rect.left;
+            const rawY = clientY - rect.top;
+            
+            return {
+                x: (rawX / rect.width) * viewMatrix.width + viewMatrix.xMin - center.x,
+                y: (rawY / rect.height) * viewMatrix.height + viewMatrix.yMin - center.y
+            };
+        }
+
+        function formatToUserLocalTime(utcString) {
+            if (!utcString) return "";
+            const parsedBase = utcString.replace(" UTC", "");
+            const parts = parsedBase.split(" ");
+            if(parts.length < 2) return utcString;
+            
+            const dateParts = parts[0].split("-");
+            const timeParts = parts[1].split(":");
+            
+            const utcDate = new Date(Date.UTC(
+                parseInt(dateParts[0]),
+                parseInt(dateParts[1]) - 1,
+                parseInt(dateParts[2]),
+                parseInt(timeParts[0]),
+                parseInt(timeParts[1])
+            ));
+            
+            return utcDate.toLocaleString(undefined, {
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function getZodiacCoordinateString(rawDegree) {
+            let normDeg = (rawDegree % 360 + 360) % 360;
+            return `${ZODIAC_SIGNS[Math.floor(normDeg / 30)]} ${Math.floor(normDeg % 30)}°`;
+        }
+
+        function getNakshatraPadaString(rawDegree) {
+            let normDeg = (rawDegree % 360 + 360) % 360;
+            const nakshatraLength = 360 / 27; 
+            const padaLength = nakshatraLength / 4; 
+            let nakshatraIndex = Math.floor(normDeg / nakshatraLength);
+            let currentPada = (Math.floor(normDeg / padaLength) % 4) + 1;
+            return `${NAKSHATRAS[nakshatraIndex]}-${currentPada}`;
+        }
+
+        function drawPlanetaryAspects(pName, sourceLong) {
+            aspectLinesLayer.innerHTML = "";
+            if (!pName || !PLANET_ASPECTS[pName]) return;
+
+            const cfg = PLANET_CONFIGS[pName];
+            const sourceRad = (sourceLong - 90) * (Math.PI / 180);
+            const startX = center.x + Math.cos(sourceRad) * cfg.radius;
+            const startY = center.y + Math.sin(sourceRad) * cfg.radius;
+
+            PLANET_ASPECTS[pName].forEach(aspectHouse => {
+                const targetLong = (sourceLong + (aspectHouse - 1) * 30) % 360;
+                const targetRad = (targetLong - 90) * (Math.PI / 180);
+                const endX = center.x + Math.cos(targetRad) * 232;
+                const endY = center.y + Math.sin(targetRad) * 232;
+
+                const laser = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                laser.setAttribute("x1", startX); laser.setAttribute("y1", startY);
+                laser.setAttribute("x2", endX); laser.setAttribute("y2", endY);
+                laser.setAttribute("stroke", cfg.color);
+                laser.setAttribute("class", "aspect-laser");
+                laser.setAttribute("filter", "url(#neon-glow-cyan)");
+                aspectLinesLayer.appendChild(laser);
+            });
+        }
+
+        for (let i = 0; i < 12; i++) {
+            const angleRad = (i * 30 - 90) * (Math.PI / 180);
+            const x1 = center.x + Math.cos(angleRad) * 65; const y1 = center.y + Math.sin(angleRad) * 65;
+            const x2 = center.x + Math.cos(angleRad) * 232; const y2 = center.y + Math.sin(angleRad) * 232;
+
+            const glowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            glowLine.setAttribute("x1", x1); glowLine.setAttribute("y1", y1); glowLine.setAttribute("x2", x2); glowLine.setAttribute("y2", y2);
+            glowLine.setAttribute("stroke", "#06b6d4"); glowLine.setAttribute("stroke-width", "4.5"); glowLine.setAttribute("opacity", "0.25");
+            houseLinesGroup.appendChild(glowLine);
+
+            const coreLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            coreLine.setAttribute("x1", x1); coreLine.setAttribute("y1", y1); coreLine.setAttribute("x2", x2); coreLine.setAttribute("y2", y2);
+            coreLine.setAttribute("stroke", "#e0f7fa"); coreLine.setAttribute("stroke-width", "1"); coreLine.setAttribute("opacity", "0.6");
+            houseLinesGroup.appendChild(coreLine);
+
+            const textAngle = (i * 30 - 75) * (Math.PI / 180);
+            const tx = center.x + Math.cos(textAngle) * 78; const ty = center.y + Math.sin(textAngle) * 78;
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", tx); text.setAttribute("y", ty);
+            text.setAttribute("fill", "#fffdf0"); text.setAttribute("filter", "url(#neon-glow-amber)");
+            text.setAttribute("font-size", "11"); text.setAttribute("font-weight", "900"); text.setAttribute("text-anchor", "middle"); text.setAttribute("dominant-baseline", "central");
+            text.textContent = ZODIAC_SIGNS[i].substring(0, 3).toUpperCase();
+            houseLinesGroup.appendChild(text);
+        }
+
+        Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
+            const track = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            track.setAttribute("cx", center.x); track.setAttribute("cy", center.y); track.setAttribute("r", cfg.radius);
+            track.setAttribute("stroke", cfg.color); track.setAttribute("stroke-width", "1.25"); track.setAttribute("fill", "none"); track.setAttribute("opacity", "0.22");
+            planetTracksGroup.appendChild(track);
+
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            group.setAttribute("id", `${name}-group`);
+            group.setAttribute("class", "draggable-planet smooth-glide");
+
+            const orbContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            orbContainer.setAttribute("transform", `translate(${center.x}, ${center.y - cfg.radius})`);
+
+            if (cfg.type === "dragon-head") {
+                const headGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                headGroup.setAttribute("class", "glow-rahu");
+                const headPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                headPath.setAttribute("d", "M0,-16 L5,-7 L13,-9 L7,0 L11,13 L3,7 L0,16 L-3,7 L-11,13 L-7,0 L-13,-9 L-5,-7 Z");
+                headPath.setAttribute("fill", "#111827"); headPath.setAttribute("stroke", "#f43f5e"); headPath.setAttribute("stroke-width", "2.5");
+                headGroup.appendChild(headPath); orbContainer.appendChild(headGroup);
+            } else if (cfg.type === "dragon-tail") {
+                const tailPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                tailPath.setAttribute("d", "M0,-15 C9,-10 13,-2 0,7 C-13,2 -5,-6 0,-15 M0,5 C5,9 0,16 0,16");
+                tailPath.setAttribute("fill", "#022c22"); tailPath.setAttribute("stroke", "#34d399"); tailPath.setAttribute("stroke-width", "2.5");
+                orbContainer.appendChild(tailPath);
+            } else if (cfg.type === "sun") {
+                const sunGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                sunGroup.setAttribute("class", "glow-sun-white");
+                const rayMatrix = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                rayMatrix.setAttribute("class", "sun-ray-matrix");
+                for (let r = 0; r < 16; r++) {
+                    const rayAngle = (r * 22.5);
+                    const ray = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                    let length = (r % 2 === 0) ? 42 : 26; let width = (r % 2 === 0) ? 4 : 2.5;
+                    ray.setAttribute("points", `0,${-width} ${length},0 0,${width} ${-length/4},0`);
+                    ray.setAttribute("fill", "url(#grad-sun-ray)"); ray.setAttribute("transform", `rotate(${rayAngle})`);
+                    rayMatrix.appendChild(ray);
+                }
+                sunGroup.appendChild(rayMatrix);
+                const core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                core.setAttribute("cx", "0"); core.setAttribute("cy", "0"); core.setAttribute("r", cfg.size); core.setAttribute("fill", "url(#grad-sun-core)"); core.setAttribute("stroke", "#ffffff"); core.setAttribute("stroke-width", "2");
+                sunGroup.appendChild(core); orbContainer.appendChild(sunGroup);
+            } else {
+                if (cfg.type === "saturn") {
+                    const ring = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+                    ring.setAttribute("cx", "0"); ring.setAttribute("cy", "0"); ring.setAttribute("rx", (cfg.size * 1.8)); ring.setAttribute("ry", (cfg.size * 0.45));
+                    ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#f59e0b"); ring.setAttribute("stroke-width", "4"); ring.setAttribute("transform", "rotate(-11)");
+                    orbContainer.appendChild(ring);
+                }
+                const body = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                body.setAttribute("cx", "0"); body.setAttribute("cy", "0"); body.setAttribute("r", cfg.size); body.setAttribute("fill", cfg.grad); body.setAttribute("stroke", "#1e293b"); body.setAttribute("stroke-width", "1");
+                orbContainer.appendChild(body);
+                if (cfg.type === "jupiter") {
+                    const spot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    spot.setAttribute("cx", "5"); spot.setAttribute("cy", "5"); spot.setAttribute("r", "3.5"); spot.setAttribute("fill", "#9a3412");
+                    orbContainer.appendChild(spot);
+                }
+                const shadingCore = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                shadingCore.setAttribute("cx", "0"); shadingCore.setAttribute("cy", "0"); shadingCore.setAttribute("r", cfg.size); shadingCore.setAttribute("fill", "url(#sphere-shading)");
+                orbContainer.appendChild(shadingCore);
+            }
+
+            group.appendChild(orbContainer); planetsLayer.appendChild(group);
+
+            const pointerLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            pointerLine.setAttribute("id", `${name}-pointer`);
+            pointerLine.setAttribute("stroke", cfg.color); pointerLine.setAttribute("stroke-dasharray", "2,3"); pointerLine.setAttribute("stroke-width", "1.25"); pointerLine.setAttribute("fill", "none"); pointerLine.setAttribute("opacity", "0.75");
+            pointerLinesLayer.appendChild(pointerLine);
+
+            const hudGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            hudGroup.setAttribute("id", `${name}-hud`);
+            const nameText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            nameText.setAttribute("class", "hud-text font-black"); nameText.textContent = cfg.label;
+            const degText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            degText.setAttribute("id", `${name}-hud-deg`); degText.setAttribute("dy", "14"); degText.setAttribute("class", "hud-text font-medium"); degText.setAttribute("fill", "#38bdf8");
+            const nakText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            nakText.setAttribute("id", `${name}-hud-nak`); nakText.setAttribute("dy", "28"); nakText.setAttribute("class", "hud-text font-light"); nakText.setAttribute("fill", "#fbbf24");
+            
+            hudGroup.appendChild(nameText); hudGroup.appendChild(degText); hudGroup.appendChild(nakText);
+            externalHudLayer.appendChild(hudGroup);
+
+            const onDragStart = (e) => {
+                isDragging = true;
+                activePlanet = name;
+                
+                Object.keys(PLANET_CONFIGS).forEach(p => {
+                    document.getElementById(`${p}-group`)?.classList.add('dragging-active');
+                });
+
+                const vector = getPointerVector(e);
+                lastAngle = Math.atan2(vector.y, vector.x) * (180 / Math.PI);
+
+                drawPlanetaryAspects(name, currentLongitudes[name]);
+                
+                if (e.pointerId && group.setPointerCapture) {
+                    group.setPointerCapture(e.pointerId);
+                }
+                
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+            };
+
+            group.addEventListener('pointerdown', onDragStart);
+            group.addEventListener('touchstart', onDragStart, { passive: false });
+        });
+
+        function layoutHUDsAntiCollision() {
+            const items = Object.entries(currentLongitudes).map(([name, long]) => {
+                return { name, long: (long % 360 + 360) % 360 };
+            });
+            items.sort((a, b) => a.long - b.long);
+            
+            // Scaled dynamic separation buffers based on view context rules
+            const minSpacingDegrees = window.innerWidth <= 768 ? 14.5 : 12.0; 
+            let passes = 12; 
+            while (passes > 0) {
+                let overlap = false;
+                for (let i = 0; i < items.length; i++) {
+                    let nextIdx = (i + 1) % items.length;
+                    let diff = items[nextIdx].long - items[i].long;
+                    if (diff < 0) diff += 360; 
+                    if (diff < minSpacingDegrees) {
+                        overlap = true;
+                        let correction = (minSpacingDegrees - diff) / 2;
+                        items[i].long = (items[i].long - correction + 360) % 360;
+                        items[nextIdx].long = (items[nextIdx].long + correction) % 360;
+                    }
+                }
+                if (!overlap) break;
+                passes--;
+            }
+
+            items.forEach(item => {
+                const pName = item.name;
+                const naturalLong = currentLongitudes[pName];
+                const cfg = PLANET_CONFIGS[pName];
+
+                const naturalRad = (naturalLong - 90) * (Math.PI / 180);
+                const adjustedRad = (item.long - 90) * (Math.PI / 180);
+
+                const planetX = center.x + Math.cos(naturalRad) * cfg.radius;
+                const planetY = center.y + Math.sin(naturalRad) * cfg.radius;
+                const edgeX = center.x + Math.cos(naturalRad) * 242;
+                const edgeY = center.y + Math.sin(naturalRad) * 242;
+                
+                // Using the dynamic responsive label placement radius parameter setup here
+                const labelX = center.x + Math.cos(adjustedRad) * dynamicLabelRadius;
+                const labelY = center.y + Math.sin(adjustedRad) * dynamicLabelRadius;
+
+                const pointerElement = document.getElementById(`${pName}-pointer`);
+                const hudNode = document.getElementById(`${pName}-hud`);
+                
+                hudNode.style.display = "block";
+                pointerElement.setAttribute("d", `M ${planetX} ${planetY} L ${edgeX} ${edgeY} L ${labelX} ${labelY}`);
+                hudNode.setAttribute("transform", `translate(${labelX}, ${labelY})`);
+                
+                let textAnchor = Math.cos(adjustedRad) > 0.3 ? "start" : (Math.cos(adjustedRad) < -0.3 ? "end" : "middle");
+                Array.from(hudNode.children).forEach(child => child.setAttribute("text-anchor", textAnchor));
+
+                document.getElementById(`${pName}-hud-deg`).textContent = getZodiacCoordinateString(naturalLong);
+                document.getElementById(`${pName}-hud-nak`).textContent = getNakshatraPadaString(naturalLong);
+            });
+        }
+
+        function updateAllVisuals(positions) {
+            Object.entries(positions).forEach(([pName, long]) => {
+                const targetGroup = document.getElementById(`${pName}-group`);
+                if (targetGroup) {
+                    targetGroup.style.transform = `rotate(${long}deg)`;
+                    targetGroup.style.transformOrigin = `${center.x}px ${center.y}px`;
+                    currentLongitudes[pName] = long;
+                }
+            });
+            layoutHUDsAntiCollision();
+            if (activePlanet) {
+                drawPlanetaryAspects(activePlanet, currentLongitudes[activePlanet]);
+            }
+        }
+
+        const onDragMove = (e) => {
+            if (!isDragging || !activePlanet || isProcessing) return;
+
+            const vector = getPointerVector(e);
+            let currentAngle = Math.atan2(vector.y, vector.x) * (180 / Math.PI);
+
+            let angleDiff = currentAngle - lastAngle;
+            if (angleDiff > 180) angleDiff -= 360;
+            if (angleDiff < -180) angleDiff += 360;
+
+            if (Math.abs(angleDiff) < 0.05) return;
+
+            lastAngle = currentAngle;
+            isProcessing = true;
+
+            const cfg = PLANET_CONFIGS[activePlanet];
+            let timeDelta = angleDiff / cfg.degreesPerDay;
+
+            fetch(`${API_BASE}/step-time?base_date=${encodeURIComponent(currentChartDateString)}&days_delta=${timeDelta}`)
+                .then(res => res.json())
+                .then(data => {
+                    currentChartDateString = data.date_str;
+                    statusDisplay.innerText = formatToUserLocalTime(data.date_str);
+                    document.getElementById('time-direction-label').innerText = `Scrubbing Matrix Axis via [${activePlanet.toUpperCase()}]`;
+                    updateAllVisuals(data.positions);
+                    isProcessing = false;
+                })
+                .catch(() => { isProcessing = false; });
+                
+            if (e.cancelable) e.preventDefault();
+        };
+
+        const onDragEnd = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            activePlanet = null;
+            aspectLinesLayer.innerHTML = "";
+            document.getElementById('time-direction-label').innerText = "Celestial Epoch Horizon";
+            
+            Object.keys(PLANET_CONFIGS).forEach(p => {
+                document.getElementById(`${p}-group`)?.classList.remove('dragging-active');
+            });
+        };
+
+        window.addEventListener('pointermove', onDragMove);
+        window.addEventListener('touchmove', onDragMove, { passive: false });
+
+        window.addEventListener('pointerup', onDragEnd);
+        window.addEventListener('touchend', onDragEnd);
+        window.addEventListener('pointercancel', onDragEnd);
+
+        fetch(`${API_BASE}/current-positions`)
+            .then(res => res.json())
+            .then(data => {
+                currentChartDateString = data.date_str;
+                statusDisplay.innerText = formatToUserLocalTime(data.date_str);
+                updateAllVisuals(data.positions);
+            })
+            .catch(err => {
+                statusDisplay.innerText = "Connection Error Setup Fail";
+                console.error("API Link Broken Matrix Context Error:", err);
+            });
+    </script>
+</body>
+</html>
