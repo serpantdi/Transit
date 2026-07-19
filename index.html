@@ -260,7 +260,7 @@
         const externalHudLayer = document.getElementById('external-hud-layer');
         const chart = document.getElementById('chart');
 
-        const API_BASE = `http://${window.location.host}`;
+        const API_BASE = window.location.origin;
 
         // Global dynamic configuration parameter
         let viewMatrix = { xMin: -30, yMin: 0, width: 860, height: 800 };
