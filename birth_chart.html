@@ -45,7 +45,8 @@
             -webkit-user-select: none; overflow: visible; 
         }
 
-        .static-planet { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .interactive-planet { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .interactive-planet:hover { filter: brightness(1.3); }
 
         @keyframes spin-earth { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .rotating-earth { animation: spin-earth 30s linear infinite; }
@@ -74,18 +75,18 @@
 
         .hud-text { font-size: 11px; font-weight: 800; fill: #ffffff; font-family: 'Space Grotesk', sans-serif; }
         @media (max-width: 768px) { .hud-text { font-size: 13px; } }
-        .aspect-laser { opacity: 0.85; stroke-width: 2.5; stroke-linecap: round; }
+        .aspect-laser { opacity: 0.9; stroke-width: 2.5; stroke-linecap: round; }
     </style>
 </head>
 <body class="text-slate-100 p-2">
 
-    <!-- Navigation Bar -->
+    <!-- Header -->
     <div class="w-full max-w-xl my-1 flex justify-between items-center select-none">
         <a href="/" class="text-xs font-bold text-cyan-400 hover:underline">← Home Hub</a>
         <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">Natal Janam Kundali</span>
     </div>
 
-    <!-- Input Form -->
+    <!-- Form Container -->
     <div id="form-container" class="backdrop-blur-md bg-slate-950/70 p-5 rounded-3xl border-2 border-cyan-400/40 w-full max-w-xl my-2 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
         <h1 class="text-xl font-extrabold text-cyan-200 mb-1">Generate Natal Birth Chart</h1>
         <p class="text-xs text-slate-400 mb-3">Enter birth details to compute your exact Lahiri Kundali wheel.</p>
@@ -124,12 +125,12 @@
         </form>
     </div>
 
-    <!-- State Dashboard HUD & Selector -->
+    <!-- HUD Dashboard -->
     <div id="chart-hud" class="hidden backdrop-blur-md bg-slate-950/50 p-3 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.25)] border-2 border-cyan-400/40 w-full max-w-md mb-2 text-center z-10 select-none">
         <div class="text-[10px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
         <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
         
-        <!-- Format Selector Buttons -->
+        <!-- Style Selector Buttons -->
         <div class="flex justify-center gap-1.5 my-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
             <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-3 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow">Western Wheel</button>
             <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-3 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white">South Indian</button>
@@ -139,7 +140,7 @@
         <div id="status-display" class="text-xs font-black tracking-wide neon-text-amber mt-1">Tap any planet to inspect aspects</div>
     </div>
 
-    <!-- Chart Viewport -->
+    <!-- Main Chart SVG Container -->
     <div id="wheel-container" class="hidden chart-viewport-container">
         <svg id="chart" viewBox="-30 0 860 800">
             <defs>
@@ -236,6 +237,7 @@
         const pointerLinesLayer = document.getElementById('pointer-lines-layer');
         const aspectLinesLayer = document.getElementById('aspect-lines-layer');
         const externalHudLayer = document.getElementById('external-hud-layer');
+        const lagnaLayer = document.getElementById('lagna-highlight-layer');
         const earthCenter = document.getElementById('earth-center');
         const chart = document.getElementById('chart');
 
@@ -328,10 +330,12 @@
             pointerLinesLayer.innerHTML = "";
             externalHudLayer.innerHTML = "";
             aspectLinesLayer.innerHTML = "";
+            lagnaLayer.innerHTML = "";
 
             if (currentChartStyle === "western") {
                 earthCenter.style.display = "block";
                 buildWesternWheel(lagnaLongitude);
+                highlightLagnaSign(lagnaLongitude);
                 renderWesternPlanets(currentLongitudes);
             } else if (currentChartStyle === "south") {
                 earthCenter.style.display = "none";
@@ -340,6 +344,135 @@
                 earthCenter.style.display = "none";
                 buildNorthIndianChart(lagnaLongitude, currentLongitudes);
             }
+        }
+
+        // --- ASPECT LASER DRAWING FOR ALL CHARTS ---
+        function drawPlanetaryAspects(pName, sourceLong) {
+            aspectLinesLayer.innerHTML = "";
+            if (!pName || !PLANET_ASPECTS[pName]) return;
+
+            const cfg = PLANET_CONFIGS[pName];
+            statusDisplay.innerText = `Aspect Lasers Activated: [${pName.toUpperCase()}]`;
+
+            if (currentChartStyle === "western") {
+                const sourceRad = (sourceLong - 90) * (Math.PI / 180);
+                const startX = center.x + Math.cos(sourceRad) * cfg.radius;
+                const startY = center.y + Math.sin(sourceRad) * cfg.radius;
+
+                PLANET_ASPECTS[pName].forEach(aspectHouse => {
+                    const targetLong = (sourceLong + (aspectHouse - 1) * 30) % 360;
+                    const targetRad = (targetLong - 90) * (Math.PI / 180);
+                    const endX = center.x + Math.cos(targetRad) * 232;
+                    const endY = center.y + Math.sin(targetRad) * 232;
+
+                    const laser = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    laser.setAttribute("x1", startX); laser.setAttribute("y1", startY);
+                    laser.setAttribute("x2", endX); laser.setAttribute("y2", endY);
+                    laser.setAttribute("stroke", cfg.color);
+                    laser.setAttribute("class", "aspect-laser");
+                    laser.setAttribute("filter", "url(#neon-glow-cyan)");
+                    aspectLinesLayer.appendChild(laser);
+                });
+            } else if (currentChartStyle === "south" || currentChartStyle === "north") {
+                const sourceSignIdx = Math.floor(sourceLong / 30);
+                const sourcePos = getChartCellCenter(sourceSignIdx);
+
+                PLANET_ASPECTS[pName].forEach(aspectHouse => {
+                    const targetSignIdx = (sourceSignIdx + aspectHouse - 1) % 12;
+                    const targetPos = getChartCellCenter(targetSignIdx);
+
+                    const laser = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    laser.setAttribute("x1", sourcePos.x); laser.setAttribute("y1", sourcePos.y);
+                    laser.setAttribute("x2", targetPos.x); laser.setAttribute("y2", targetPos.y);
+                    laser.setAttribute("stroke", cfg.color);
+                    laser.setAttribute("class", "aspect-laser");
+                    laser.setAttribute("filter", "url(#neon-glow-cyan)");
+                    aspectLinesLayer.appendChild(laser);
+                });
+            }
+        }
+
+        function getChartCellCenter(signIdx) {
+            const left = 140, top = 140, size = 520, box = size / 4;
+            if (currentChartStyle === "south") {
+                const gridMap = {
+                    11: { col: 1, row: 0 }, 0: { col: 2, row: 0 }, 1: { col: 3, row: 0 }, 2: { col: 3, row: 1 },
+                    3: { col: 3, row: 2 }, 4: { col: 3, row: 3 }, 5: { col: 2, row: 3 }, 6: { col: 1, row: 3 },
+                    7: { col: 0, row: 3 }, 8: { col: 0, row: 2 }, 9: { col: 0, row: 1 }, 10: { col: 0, row: 0 }
+                };
+                const c = gridMap[signIdx];
+                return { x: left + c.col * box + box / 2, y: top + c.row * box + box / 2 };
+            } else {
+                const lagnaSignIdx = Math.floor(lagnaLongitude / 30);
+                const houseNum = ((signIdx - lagnaSignIdx + 12) % 12) + 1;
+                const houseCenters = [
+                    { x: left + size/2, y: top + size/6 }, { x: left + size/4, y: top + size/12 },
+                    { x: left + size/12, y: top + size/4 }, { x: left + size/4, y: top + size/2 },
+                    { x: left + size/12, y: top + (size*3)/4 }, { x: left + size/4, y: top + (size*11)/12 },
+                    { x: left + size/2, y: top + (size*5)/6 }, { x: left + (size*3)/4, y: top + (size*11)/12 },
+                    { x: left + (size*11)/12, y: top + (size*3)/4 }, { x: left + (size*3)/4, y: top + size/2 },
+                    { x: left + (size*11)/12, y: top + size/4 }, { x: left + (size*3)/4, y: top + size/12 }
+                ];
+                return houseCenters[houseNum - 1];
+            }
+        }
+
+        // --- HELPER TO RENDER FULL PLANET GRAPHICS ---
+        function createPlanetGraphicElement(cfg) {
+            const orbContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+            if (cfg.type === "dragon-head") {
+                const headGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                headGroup.setAttribute("class", "glow-rahu");
+                const headPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                headPath.setAttribute("d", "M0,-16 L5,-7 L13,-9 L7,0 L11,13 L3,7 L0,16 L-3,7 L-11,13 L-7,0 L-13,-9 L-5,-7 Z");
+                headPath.setAttribute("fill", "#111827"); headPath.setAttribute("stroke", "#f43f5e"); headPath.setAttribute("stroke-width", "2.5");
+                headGroup.appendChild(headPath); orbContainer.appendChild(headGroup);
+            } else if (cfg.type === "dragon-tail") {
+                const tailPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                tailPath.setAttribute("d", "M0,-15 C9,-10 13,-2 0,7 C-13,2 -5,-6 0,-15 M0,5 C5,9 0,16 0,16");
+                tailPath.setAttribute("fill", "#022c22"); tailPath.setAttribute("stroke", "#34d399"); tailPath.setAttribute("stroke-width", "2.5");
+                orbContainer.appendChild(tailPath);
+            } else if (cfg.type === "sun") {
+                const sunGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                sunGroup.setAttribute("class", "glow-sun-white");
+                const rayMatrix = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                rayMatrix.setAttribute("class", "sun-ray-matrix");
+                for (let r = 0; r < 16; r++) {
+                    const rayAngle = (r * 22.5);
+                    const ray = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                    let length = (r % 2 === 0) ? 42 : 26; let width = (r % 2 === 0) ? 4 : 2.5;
+                    ray.setAttribute("points", `0,${-width} ${length},0 0,${width} ${-length/4},0`);
+                    ray.setAttribute("fill", "url(#grad-sun-ray)"); ray.setAttribute("transform", `rotate(${rayAngle})`);
+                    rayMatrix.appendChild(ray);
+                }
+                sunGroup.appendChild(rayMatrix);
+                const core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                core.setAttribute("cx", "0"); core.setAttribute("cy", "0"); core.setAttribute("r", cfg.size);
+                core.setAttribute("fill", "url(#grad-sun-core)"); core.setAttribute("stroke", "#ffffff"); core.setAttribute("stroke-width", "2");
+                sunGroup.appendChild(core); orbContainer.appendChild(sunGroup);
+            } else {
+                if (cfg.type === "saturn") {
+                    const ring = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+                    ring.setAttribute("cx", "0"); ring.setAttribute("cy", "0"); ring.setAttribute("rx", (cfg.size * 1.8)); ring.setAttribute("ry", (cfg.size * 0.45));
+                    ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#f59e0b"); ring.setAttribute("stroke-width", "4"); ring.setAttribute("transform", "rotate(-11)");
+                    orbContainer.appendChild(ring);
+                }
+                const body = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                body.setAttribute("cx", "0"); body.setAttribute("cy", "0"); body.setAttribute("r", cfg.size);
+                body.setAttribute("fill", cfg.grad || cfg.color); body.setAttribute("stroke", "#1e293b"); body.setAttribute("stroke-width", "1");
+                orbContainer.appendChild(body);
+                if (cfg.type === "jupiter") {
+                    const spot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    spot.setAttribute("cx", "5"); spot.setAttribute("cy", "5"); spot.setAttribute("r", "3.5"); spot.setAttribute("fill", "#9a3412");
+                    orbContainer.appendChild(spot);
+                }
+                const shadingCore = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                shadingCore.setAttribute("cx", "0"); shadingCore.setAttribute("cy", "0"); shadingCore.setAttribute("r", cfg.size); shadingCore.setAttribute("fill", "url(#sphere-shading)");
+                orbContainer.appendChild(shadingCore);
+            }
+
+            return orbContainer;
         }
 
         // --- WESTERN WHEEL ---
@@ -354,6 +487,12 @@
             circleOuter.setAttribute("stroke", "#06b6d4"); circleOuter.setAttribute("stroke-width", "3"); circleOuter.setAttribute("fill", "none");
             circleOuter.setAttribute("filter", "url(#neon-glow-cyan)");
             baseChartLayer.appendChild(circleOuter);
+
+            const circleInner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circleInner.setAttribute("cx", "400"); circleInner.setAttribute("cy", "400"); circleInner.setAttribute("r", "65");
+            circleInner.setAttribute("stroke", "#06b6d4"); circleInner.setAttribute("stroke-width", "2.5"); circleInner.setAttribute("fill", "none");
+            circleInner.setAttribute("filter", "url(#neon-glow-cyan)");
+            baseChartLayer.appendChild(circleInner);
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
 
@@ -386,26 +525,62 @@
                 hText.textContent = `H${houseNumber}`;
                 houseLinesGroup.appendChild(hText);
             }
+
+            Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
+                const track = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                track.setAttribute("cx", center.x); track.setAttribute("cy", center.y); track.setAttribute("r", cfg.radius);
+                track.setAttribute("stroke", cfg.color); track.setAttribute("stroke-width", "1.25"); track.setAttribute("fill", "none"); track.setAttribute("opacity", "0.22");
+                planetTracksGroup.appendChild(track);
+            });
+        }
+
+        function highlightLagnaSign(ascDegree) {
+            const lagnaSignIndex = Math.floor(ascDegree / 30);
+            const startAngleRad = (lagnaSignIndex * 30 - 90) * (Math.PI / 180);
+            const endAngleRad = ((lagnaSignIndex + 1) * 30 - 90) * (Math.PI / 180);
+
+            const rInner = 65, rOuter = 232;
+            const x1Inner = center.x + Math.cos(startAngleRad) * rInner; const y1Inner = center.y + Math.sin(startAngleRad) * rInner;
+            const x1Outer = center.x + Math.cos(startAngleRad) * rOuter; const y1Outer = center.y + Math.sin(startAngleRad) * rOuter;
+            const x2Inner = center.x + Math.cos(endAngleRad) * rInner; const y2Inner = center.y + Math.sin(endAngleRad) * rInner;
+            const x2Outer = center.x + Math.cos(endAngleRad) * rOuter; const y2Outer = center.y + Math.sin(endAngleRad) * rOuter;
+
+            const sectorPath = `M ${x1Inner} ${y1Inner} L ${x1Outer} ${y1Outer} A ${rOuter} ${rOuter} 0 0 1 ${x2Outer} ${y2Outer} L ${x2Inner} ${y2Inner} A ${rInner} ${rInner} 0 0 0 ${x1Inner} ${y1Inner} Z`;
+            const wedge = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            wedge.setAttribute("d", sectorPath); wedge.setAttribute("fill", "#fbbf24"); wedge.setAttribute("fill-opacity", "0.15");
+            wedge.setAttribute("stroke", "#fbbf24"); wedge.setAttribute("stroke-width", "2"); wedge.setAttribute("filter", "url(#neon-glow-gold)");
+            lagnaLayer.appendChild(wedge);
+
+            const ascRad = (ascDegree - 90) * (Math.PI / 180);
+            const starX = center.x + Math.cos(ascRad) * 232; const starY = center.y + Math.sin(ascRad) * 232;
+            const starGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            starGroup.setAttribute("transform", `translate(${starX}, ${starY})`);
+
+            const starPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            starPath.setAttribute("d", "M 0 -14 L 4 -4 L 14 -4 L 6 2 L 9 12 L 0 6 L -9 12 L -6 2 L -14 -4 L -4 -4 Z");
+            starPath.setAttribute("fill", "#ef4444"); starPath.setAttribute("stroke", "#fde047"); starPath.setAttribute("stroke-width", "2"); starPath.setAttribute("filter", "url(#neon-glow-gold)");
+
+            const starText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            starText.setAttribute("x", "0"); starText.setAttribute("y", "22"); starText.setAttribute("fill", "#fde047"); starText.setAttribute("font-size", "10"); starText.setAttribute("font-weight", "900"); starText.setAttribute("text-anchor", "middle");
+            starText.textContent = "LAGNA";
+
+            starGroup.appendChild(starPath); starGroup.appendChild(starText); lagnaLayer.appendChild(starGroup);
         }
 
         function renderWesternPlanets(positions) {
             Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
                 const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                group.setAttribute("id", `${name}-group`); group.setAttribute("class", "static-planet");
+                group.setAttribute("id", `${name}-group`); group.setAttribute("class", "interactive-planet");
 
-                const orbContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                orbContainer.setAttribute("transform", `translate(${center.x}, ${center.y - cfg.radius})`);
-
-                const body = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                body.setAttribute("cx", "0"); body.setAttribute("cy", "0"); body.setAttribute("r", cfg.size);
-                body.setAttribute("fill", cfg.grad || cfg.color); body.setAttribute("stroke", "#1e293b"); body.setAttribute("stroke-width", "1");
-                orbContainer.appendChild(body);
-                group.appendChild(orbContainer);
-                planetsLayer.appendChild(group);
+                const graphic = createPlanetGraphicElement(cfg);
+                graphic.setAttribute("transform", `translate(${center.x}, ${center.y - cfg.radius})`);
+                group.appendChild(graphic); planetsLayer.appendChild(group);
 
                 const long = positions[name];
                 group.style.transform = `rotate(${long}deg)`;
                 group.style.transformOrigin = `${center.x}px ${center.y}px`;
+
+                group.addEventListener('click', () => drawPlanetaryAspects(name, currentLongitudes[name]));
 
                 const pointerLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 pointerLine.setAttribute("id", `${name}-pointer`);
@@ -483,7 +658,7 @@
             });
         }
 
-        // --- SOUTH INDIAN CHART ---
+        // --- SOUTH INDIAN CHART WITH GRAPHICS & INTERACTION ---
         function buildSouthIndianChart(ascDegree, positions) {
             const size = 520, left = 140, top = 140, box = size / 4;
             const outerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -502,22 +677,13 @@
                 { s: 7, col: 0, row: 3 }, { s: 8, col: 0, row: 2 }, { s: 9, col: 0, row: 1 }, { s: 10, col: 0, row: 0 }
             ];
 
-            const signPlanets = {};
-            for (let i = 0; i < 12; i++) signPlanets[i] = [];
-            Object.entries(positions).forEach(([pName, long]) => {
-                const sIdx = Math.floor(long / 30);
-                signPlanets[sIdx].push(PLANET_CONFIGS[pName].label);
-            });
-
             const lagnaSignIdx = Math.floor(ascDegree / 30);
 
             gridCoords.forEach(item => {
-                const x = left + item.col * box;
-                const y = top + item.row * box;
-
+                const x = left + item.col * box; const y = top + item.row * box;
                 const cell = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 cell.setAttribute("x", x); cell.setAttribute("y", y); cell.setAttribute("width", box); cell.setAttribute("height", box);
-                cell.setAttribute("fill", "none"); cell.setAttribute("stroke", "#1e293b"); cell.setAttribute("stroke-width", "1");
+                cell.setAttribute("fill", item.s === lagnaSignIdx ? "#fbbf2415" : "none"); cell.setAttribute("stroke", "#1e293b"); cell.setAttribute("stroke-width", "1");
                 baseChartLayer.appendChild(cell);
 
                 const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -533,19 +699,50 @@
                     lText.textContent = "ASC";
                     baseChartLayer.appendChild(lText);
                 }
+            });
 
+            const signPlanets = {};
+            for (let i = 0; i < 12; i++) signPlanets[i] = [];
+            Object.entries(positions).forEach(([pName, long]) => {
+                const sIdx = Math.floor(long / 30);
+                signPlanets[sIdx].push({ name: pName, long });
+            });
+
+            gridCoords.forEach(item => {
+                const x = left + item.col * box; const y = top + item.row * box;
                 const pList = signPlanets[item.s];
-                pList.forEach((pLabel, pIdx) => {
-                    const pText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    pText.setAttribute("x", x + 10 + (pIdx % 2) * 55); pText.setAttribute("y", y + 36 + Math.floor(pIdx / 2) * 18);
-                    pText.setAttribute("fill", "#ffffff"); pText.setAttribute("font-size", "11"); pText.setAttribute("font-weight", "800");
-                    pText.textContent = pLabel;
-                    baseChartLayer.appendChild(pText);
+
+                pList.forEach((pObj, pIdx) => {
+                    const cfg = PLANET_CONFIGS[pObj.name];
+                    const pGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    pGroup.setAttribute("class", "interactive-planet");
+
+                    const px = x + 20 + (pIdx % 2) * 58;
+                    const py = y + 38 + Math.floor(pIdx / 2) * 42;
+
+                    const graphic = createPlanetGraphicElement(cfg);
+                    graphic.setAttribute("transform", `translate(${px}, ${py}) scale(0.65)`);
+                    pGroup.appendChild(graphic);
+
+                    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    txt.setAttribute("x", px); txt.setAttribute("y", py + 16);
+                    txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "9"); txt.setAttribute("font-weight", "800"); txt.setAttribute("text-anchor", "middle");
+                    txt.textContent = cfg.label;
+                    pGroup.appendChild(txt);
+
+                    const subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    subTxt.setAttribute("x", px); subTxt.setAttribute("y", py + 26);
+                    subTxt.setAttribute("fill", "#fbbf24"); subTxt.setAttribute("font-size", "7.5"); subTxt.setAttribute("font-weight", "700"); subTxt.setAttribute("text-anchor", "middle");
+                    subTxt.textContent = `${Math.floor(pObj.long % 30)}° ${getNakshatraPadaString(pObj.long).split('-')[0].substring(0,4)}`;
+                    pGroup.appendChild(subTxt);
+
+                    pGroup.addEventListener('click', () => drawPlanetaryAspects(pObj.name, pObj.long));
+                    planetsLayer.appendChild(pGroup);
                 });
             });
         }
 
-        // --- NORTH INDIAN CHART ---
+        // --- NORTH INDIAN CHART WITH GRAPHICS & INTERACTION ---
         function buildNorthIndianChart(ascDegree, positions) {
             const left = 140, top = 140, size = 520;
             const outerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -565,52 +762,65 @@
             });
 
             const houseCenters = [
-                { h: 1, x: left + size/2, y: top + size/6 },
-                { h: 2, x: left + size/4, y: top + size/12 },
-                { h: 3, x: left + size/12, y: top + size/4 },
-                { h: 4, x: left + size/4, y: top + size/2 },
-                { h: 5, x: left + size/12, y: top + (size*3)/4 },
-                { h: 6, x: left + size/4, y: top + (size*11)/12 },
-                { h: 7, x: left + size/2, y: top + (size*5)/6 },
-                { h: 8, x: left + (size*3)/4, y: top + (size*11)/12 },
-                { h: 9, x: left + (size*11)/12, y: top + (size*3)/4 },
-                { h: 10, x: left + (size*3)/4, y: top + size/2 },
-                { h: 11, x: left + (size*11)/12, y: top + size/4 },
-                { h: 12, x: left + (size*3)/4, y: top + size/12 }
+                { h: 1, x: left + size/2, y: top + size/6 }, { h: 2, x: left + size/4, y: top + size/12 },
+                { h: 3, x: left + size/12, y: top + size/4 }, { h: 4, x: left + size/4, y: top + size/2 },
+                { h: 5, x: left + size/12, y: top + (size*3)/4 }, { h: 6, x: left + size/4, y: top + (size*11)/12 },
+                { h: 7, x: left + size/2, y: top + (size*5)/6 }, { h: 8, x: left + (size*3)/4, y: top + (size*11)/12 },
+                { h: 9, x: left + (size*11)/12, y: top + (size*3)/4 }, { h: 10, x: left + (size*3)/4, y: top + size/2 },
+                { h: 11, x: left + (size*11)/12, y: top + size/4 }, { h: 12, x: left + (size*3)/4, y: top + size/12 }
             ];
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
-
             const housePlanets = {};
             for (let i = 1; i <= 12; i++) housePlanets[i] = [];
 
             Object.entries(positions).forEach(([pName, long]) => {
                 const planetSignIdx = Math.floor(long / 30);
                 const houseNum = ((planetSignIdx - lagnaSignIdx + 12) % 12) + 1;
-                housePlanets[houseNum].push(PLANET_CONFIGS[pName].label);
+                housePlanets[houseNum].push({ name: pName, long });
             });
 
             houseCenters.forEach(item => {
                 const signNum = ((lagnaSignIdx + item.h - 1) % 12) + 1;
 
                 const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                signText.setAttribute("x", item.x); signText.setAttribute("y", item.y - 12);
+                signText.setAttribute("x", item.x); signText.setAttribute("y", item.y - 25);
                 signText.setAttribute("fill", "#fbbf24"); signText.setAttribute("font-size", "11"); signText.setAttribute("font-weight", "900"); signText.setAttribute("text-anchor", "middle");
                 signText.textContent = signNum;
                 baseChartLayer.appendChild(signText);
 
                 const pList = housePlanets[item.h];
-                pList.forEach((pLabel, pIdx) => {
-                    const pText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    pText.setAttribute("x", item.x); pText.setAttribute("y", item.y + 6 + (pIdx * 14));
-                    pText.setAttribute("fill", "#ffffff"); pText.setAttribute("font-size", "11"); pText.setAttribute("font-weight", "800"); pText.setAttribute("text-anchor", "middle");
-                    pText.textContent = pLabel;
-                    baseChartLayer.appendChild(pText);
+                pList.forEach((pObj, pIdx) => {
+                    const cfg = PLANET_CONFIGS[pObj.name];
+                    const pGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                    pGroup.setAttribute("class", "interactive-planet");
+
+                    const px = item.x + ((pIdx % 2 === 0 ? -1 : 1) * 32);
+                    const py = item.y - 5 + Math.floor(pIdx / 2) * 38;
+
+                    const graphic = createPlanetGraphicElement(cfg);
+                    graphic.setAttribute("transform", `translate(${px}, ${py}) scale(0.62)`);
+                    pGroup.appendChild(graphic);
+
+                    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    txt.setAttribute("x", px); txt.setAttribute("y", py + 14);
+                    txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "9"); txt.setAttribute("font-weight", "800"); txt.setAttribute("text-anchor", "middle");
+                    txt.textContent = cfg.label;
+                    pGroup.appendChild(txt);
+
+                    const subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    subTxt.setAttribute("x", px); subTxt.setAttribute("y", py + 24);
+                    subTxt.setAttribute("fill", "#fbbf24"); subTxt.setAttribute("font-size", "7.5"); subTxt.setAttribute("font-weight", "700"); subTxt.setAttribute("text-anchor", "middle");
+                    subTxt.textContent = `${Math.floor(pObj.long % 30)}° ${getNakshatraPadaString(pObj.long).split('-')[0].substring(0,4)}`;
+                    pGroup.appendChild(subTxt);
+
+                    pGroup.addEventListener('click', () => drawPlanetaryAspects(pObj.name, pObj.long));
+                    planetsLayer.appendChild(pGroup);
                 });
             });
         }
 
-        // Form Submission
+        // Form Submit Listener
         document.getElementById('chart-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData();
