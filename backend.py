@@ -7,7 +7,7 @@ import swisseph as swe
 
 app = FastAPI(title="Vedic Cosmic Chakra API")
 
-# Enable CORS for Render deployment
+# Enable CORS for all incoming browser requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Swiss Ephemeris configuration (Sidereal / Lahiri)
+# Set Lahiri Ayanamsa
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 PLANET_IDS = {
@@ -41,25 +41,22 @@ def get_julian_day(utc_datetime: datetime) -> float:
 def calculate_positions(utc_dt: datetime):
     jd = get_julian_day(utc_dt)
     positions = {}
-    
-    # Calculate Sidereal planetary positions
     flags = swe.FLG_SWIEPH | swe.FLG_SIDEREAL
     
     for planet_name, planet_id in PLANET_IDS.items():
         res, _ = swe.calc_ut(jd, planet_id, flags)
         positions[planet_name] = res[0] % 360
 
-    # Ketu is exactly 180 degrees opposite Rahu
     positions["ketu"] = (positions["rahu"] + 180) % 360
-
     return positions
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():
+    # Serves transit_wheel.html directly at root
     if os.path.exists("transit_wheel.html"):
         with open("transit_wheel.html", "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1>Transit Wheel HTML file not found!</h1>"
+    return "<h1>transit_wheel.html not found in root directory!</h1>"
 
 @app.get("/current-positions")
 def current_positions():
@@ -86,38 +83,8 @@ def step_time(base_date: str, days_delta: float):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/calculate-birth-chart")
-def calculate_birth_chart(
-    name: str = Form(...),
-    dob: str = Form(...),
-    tob: str = Form(...),
-    city: str = Form(...),
-    tz_offset: float = Form(...)
-):
-    try:
-        local_dt = datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
-        utc_dt = local_dt - timedelta(hours=tz_offset)
-        utc_dt = utc_dt.replace(tzinfo=timezone.utc)
-        
-        positions = calculate_positions(utc_dt)
-        jd = get_julian_day(utc_dt)
-        
-        # Calculate Ascendant (Lagna) - Defaulting to center coordinates if city lookup absent
-        lat, lon = 16.5449, 81.5212  # Default coordinates
-        cusps, ascmc = swe.houses_ex(jd, lat, lon, b'A', flags=swe.FLG_SIDEREAL)
-        ascendant = ascmc[0] % 360
-
-        return {
-            "status": "success",
-            "name": name,
-            "dob": dob,
-            "tob": tob,
-            "ascendant": ascendant,
-            "positions": positions
-        }
-    except Exception as e:
-        return JSONResponse(status_code=400, content={"status": "error", "message": str(e)})
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend:app", host="0.0.0.0", port=10000, reload=True)
+    # Dynamically bind to Render's assigned PORT
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
