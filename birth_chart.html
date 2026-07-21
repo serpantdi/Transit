@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Vedic Birth Chart Generator - Janam Kundali</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -11,7 +11,8 @@
         html, body {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            overflow-x: hidden; overscroll-behavior: none;
+            overflow-x: auto;
+            touch-action: manipulation;
         }
 
         body {
@@ -34,14 +35,14 @@
         }
         
         .chart-viewport-container {
-            width: 100%; max-width: 960px; aspect-ratio: 1.15 / 1;
+            width: 100%; max-width: 900px; aspect-ratio: 1.15 / 1;
             display: flex; align-items: center; justify-content: center;
-            touch-action: none; padding: 4px; box-sizing: border-box; margin-top: -4px;
+            padding: 4px; box-sizing: border-box; margin-top: -4px;
         }
 
         #chart {
             width: 100%; height: 100%;
-            touch-action: none; user-select: none;
+            user-select: none;
             -webkit-user-select: none; overflow: visible; 
         }
 
@@ -49,7 +50,7 @@
         .interactive-planet:hover { filter: brightness(1.3); }
 
         @keyframes spin-earth { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .rotating-earth { animation: spin-earth 30s linear infinite; }
+        .rotating-earth { animation: spin-earth 45s linear infinite; }
 
         @keyframes sun-shimmer {
             0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.88; }
@@ -73,9 +74,9 @@
         .neon-text-amber { color: #fffdeb; text-shadow: 0 0 4px #fbbf24, 0 0 10px #fbbf24; }
         .neon-text-emerald { color: #ecfdf5; text-shadow: 0 0 4px #34d399, 0 0 10px #10b981; }
 
-        .hud-text { font-size: 11px; font-weight: 800; fill: #ffffff; font-family: 'Space Grotesk', sans-serif; }
-        @media (max-width: 768px) { .hud-text { font-size: 13px; } }
-        .aspect-laser { opacity: 0.9; stroke-width: 2.5; stroke-linecap: round; }
+        .hud-text { font-size: 12px; font-weight: 800; fill: #ffffff; font-family: 'Space Grotesk', sans-serif; }
+        @media (max-width: 768px) { .hud-text { font-size: 14px; } }
+        .aspect-laser { opacity: 0.95; stroke-width: 3; stroke-linecap: round; pointer-events: none; }
     </style>
 </head>
 <body class="text-slate-100 p-2">
@@ -86,7 +87,7 @@
         <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">Natal Janam Kundali</span>
     </div>
 
-    <!-- Form Container -->
+    <!-- Input Form -->
     <div id="form-container" class="backdrop-blur-md bg-slate-950/70 p-5 rounded-3xl border-2 border-cyan-400/40 w-full max-w-xl my-2 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
         <h1 class="text-xl font-extrabold text-cyan-200 mb-1">Generate Natal Birth Chart</h1>
         <p class="text-xs text-slate-400 mb-3">Enter birth details to compute your exact Lahiri Kundali wheel.</p>
@@ -130,7 +131,7 @@
         <div class="text-[10px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
         <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
         
-        <!-- Style Selector Buttons -->
+        <!-- Format Selector Buttons -->
         <div class="flex justify-center gap-1.5 my-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
             <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-3 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow">Western Wheel</button>
             <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-3 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white">South Indian</button>
@@ -140,7 +141,7 @@
         <div id="status-display" class="text-xs font-black tracking-wide neon-text-amber mt-1">Tap any planet to inspect aspects</div>
     </div>
 
-    <!-- Main Chart SVG Container -->
+    <!-- Chart SVG Viewport Container -->
     <div id="wheel-container" class="hidden chart-viewport-container">
         <svg id="chart" viewBox="-30 0 860 800">
             <defs>
@@ -207,21 +208,27 @@
             <g id="lagna-highlight-layer"></g>
             <g id="planet-tracks"></g>
             <g id="house-lines"></g>
+            
+            <!-- Realistic Earth in Central Axis -->
+            <g id="earth-center" class="rotating-earth" style="transform-origin: 400px 400px;">
+                <circle cx="400" cy="400" r="34" fill="#0f4c81" stroke="#38bdf8" stroke-width="1.5"/>
+                <!-- Earth Continents Real Shapes -->
+                <g transform="translate(400, 400) scale(0.68) translate(-400, -400)">
+                    <!-- North & South America -->
+                    <path d="M365,372 Q362,380 368,390 T372,402 T365,415 Q360,425 368,435 T375,442 Q372,430 376,418 T380,392 Z" fill="#10b981" />
+                    <!-- Eurasia & Africa -->
+                    <path d="M392,365 Q415,362 430,375 T442,390 Q435,402 422,398 T410,412 Q400,422 405,432 T395,440 Q390,422 396,408 Z" fill="#059669" />
+                    <!-- Australia -->
+                    <path d="M428,422 Q438,420 442,428 T432,435 Z" fill="#10b981" />
+                    <!-- Antarctica -->
+                    <path d="M370,446 Q400,442 430,446 T400,449 Z" fill="#e2e8f0" opacity="0.85" />
+                </g>
+                <circle cx="400" cy="400" r="34" fill="url(#sphere-shading)"/>
+                <circle cx="400" cy="400" r="3.5" fill="#ffffff" opacity="0.9"/>
+            </g>
+
             <g id="aspect-lines-layer"></g>
             <g id="pointer-lines-layer"></g>
-            
-            <g id="earth-center" class="rotating-earth" style="transform-origin: 400px 400px;">
-                <circle cx="400" cy="400" r="32" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1.5"/>
-                <g transform="translate(400, 400) scale(1.15) translate(-400, -400)">
-                    <path d="M375,390 C372,380 386,374 393,377 C396,380 390,390 375,390 Z" fill="#059669" />
-                    <path d="M403,380 C410,374 424,377 427,386 C421,395 406,390 403,380 Z" fill="#10b981" />
-                    <path d="M386,407 C383,416 397,423 406,418 C412,413 403,401 386,407 Z" fill="#059669" />
-                    <path d="M412,403 C418,398 427,405 424,413 C416,421 406,410 412,403 Z" fill="#10b981" />
-                </g>
-                <circle cx="400" cy="400" r="32" fill="url(#sphere-shading)"/>
-                <circle cx="400" cy="400" r="3" fill="#ffffff" opacity="0.9"/>
-            </g>
-            
             <g id="planets-layer"></g>
             <g id="external-hud-layer"></g>
         </svg>
@@ -290,6 +297,7 @@
         };
 
         let currentLongitudes = {};
+        let planetPositionsMap = {}; 
         let lagnaLongitude = 0;
 
         function getZodiacCoordinateString(rawDegree) {
@@ -331,6 +339,7 @@
             externalHudLayer.innerHTML = "";
             aspectLinesLayer.innerHTML = "";
             lagnaLayer.innerHTML = "";
+            planetPositionsMap = {};
 
             if (currentChartStyle === "western") {
                 earthCenter.style.display = "block";
@@ -346,7 +355,7 @@
             }
         }
 
-        // --- ASPECT LASER DRAWING FOR ALL CHARTS ---
+        // --- ASPECT LASER SYSTEM FOR ALL CHARTS ---
         function drawPlanetaryAspects(pName, sourceLong) {
             aspectLinesLayer.innerHTML = "";
             if (!pName || !PLANET_ASPECTS[pName]) return;
@@ -374,15 +383,17 @@
                     aspectLinesLayer.appendChild(laser);
                 });
             } else if (currentChartStyle === "south" || currentChartStyle === "north") {
+                const startPos = planetPositionsMap[pName];
+                if (!startPos) return;
+
                 const sourceSignIdx = Math.floor(sourceLong / 30);
-                const sourcePos = getChartCellCenter(sourceSignIdx);
 
                 PLANET_ASPECTS[pName].forEach(aspectHouse => {
                     const targetSignIdx = (sourceSignIdx + aspectHouse - 1) % 12;
                     const targetPos = getChartCellCenter(targetSignIdx);
 
                     const laser = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    laser.setAttribute("x1", sourcePos.x); laser.setAttribute("y1", sourcePos.y);
+                    laser.setAttribute("x1", startPos.x); laser.setAttribute("y1", startPos.y);
                     laser.setAttribute("x2", targetPos.x); laser.setAttribute("y2", targetPos.y);
                     laser.setAttribute("stroke", cfg.color);
                     laser.setAttribute("class", "aspect-laser");
@@ -393,7 +404,7 @@
         }
 
         function getChartCellCenter(signIdx) {
-            const left = 140, top = 140, size = 520, box = size / 4;
+            const left = 170, top = 140, size = 460, box = size / 4;
             if (currentChartStyle === "south") {
                 const gridMap = {
                     11: { col: 1, row: 0 }, 0: { col: 2, row: 0 }, 1: { col: 3, row: 0 }, 2: { col: 3, row: 1 },
@@ -417,7 +428,7 @@
             }
         }
 
-        // --- HELPER TO RENDER FULL PLANET GRAPHICS ---
+        // --- ORB GRAPHICS CREATOR ---
         function createPlanetGraphicElement(cfg) {
             const orbContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
@@ -658,9 +669,9 @@
             });
         }
 
-        // --- SOUTH INDIAN CHART WITH GRAPHICS & INTERACTION ---
+        // --- SOUTH INDIAN CHART ---
         function buildSouthIndianChart(ascDegree, positions) {
-            const size = 520, left = 140, top = 140, box = size / 4;
+            const size = 460, left = 170, top = 140, box = size / 4;
             const outerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             outerRect.setAttribute("x", left); outerRect.setAttribute("y", top); outerRect.setAttribute("width", size); outerRect.setAttribute("height", size);
             outerRect.setAttribute("fill", "#030611"); outerRect.setAttribute("stroke", "#06b6d4"); outerRect.setAttribute("stroke-width", "3");
@@ -687,15 +698,15 @@
                 baseChartLayer.appendChild(cell);
 
                 const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                signText.setAttribute("x", x + 6); signText.setAttribute("y", y + 14);
-                signText.setAttribute("fill", "#38bdf8"); signText.setAttribute("font-size", "10"); signText.setAttribute("font-weight", "700");
+                signText.setAttribute("x", x + 8); signText.setAttribute("y", y + 16);
+                signText.setAttribute("fill", "#38bdf8"); signText.setAttribute("font-size", "12"); signText.setAttribute("font-weight", "800");
                 signText.textContent = ZODIAC_SIGNS[item.s].substring(0, 3).toUpperCase();
                 baseChartLayer.appendChild(signText);
 
                 if (item.s === lagnaSignIdx) {
                     const lText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    lText.setAttribute("x", x + box - 8); lText.setAttribute("y", y + 14);
-                    lText.setAttribute("fill", "#fde047"); lText.setAttribute("font-size", "10"); lText.setAttribute("font-weight", "900"); lText.setAttribute("text-anchor", "end");
+                    lText.setAttribute("x", x + box - 8); lText.setAttribute("y", y + 16);
+                    lText.setAttribute("fill", "#fde047"); lText.setAttribute("font-size", "12"); lText.setAttribute("font-weight", "900"); lText.setAttribute("text-anchor", "end");
                     lText.textContent = "ASC";
                     baseChartLayer.appendChild(lText);
                 }
@@ -717,22 +728,24 @@
                     const pGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
                     pGroup.setAttribute("class", "interactive-planet");
 
-                    const px = x + 20 + (pIdx % 2) * 58;
-                    const py = y + 38 + Math.floor(pIdx / 2) * 42;
+                    const px = x + 24 + (pIdx % 2) * 54;
+                    const py = y + 42 + Math.floor(pIdx / 2) * 44;
+
+                    planetPositionsMap[pObj.name] = { x: px, y: py };
 
                     const graphic = createPlanetGraphicElement(cfg);
-                    graphic.setAttribute("transform", `translate(${px}, ${py}) scale(0.65)`);
+                    graphic.setAttribute("transform", `translate(${px}, ${py}) scale(0.8)`);
                     pGroup.appendChild(graphic);
 
                     const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    txt.setAttribute("x", px); txt.setAttribute("y", py + 16);
-                    txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "9"); txt.setAttribute("font-weight", "800"); txt.setAttribute("text-anchor", "middle");
+                    txt.setAttribute("x", px); txt.setAttribute("y", py + 18);
+                    txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "11"); txt.setAttribute("font-weight", "900"); txt.setAttribute("text-anchor", "middle");
                     txt.textContent = cfg.label;
                     pGroup.appendChild(txt);
 
                     const subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    subTxt.setAttribute("x", px); subTxt.setAttribute("y", py + 26);
-                    subTxt.setAttribute("fill", "#fbbf24"); subTxt.setAttribute("font-size", "7.5"); subTxt.setAttribute("font-weight", "700"); subTxt.setAttribute("text-anchor", "middle");
+                    subTxt.setAttribute("x", px); subTxt.setAttribute("y", py + 30);
+                    subTxt.setAttribute("fill", "#fbbf24"); subTxt.setAttribute("font-size", "9.5"); subTxt.setAttribute("font-weight", "800"); subTxt.setAttribute("text-anchor", "middle");
                     subTxt.textContent = `${Math.floor(pObj.long % 30)}° ${getNakshatraPadaString(pObj.long).split('-')[0].substring(0,4)}`;
                     pGroup.appendChild(subTxt);
 
@@ -742,9 +755,9 @@
             });
         }
 
-        // --- NORTH INDIAN CHART WITH GRAPHICS & INTERACTION ---
+        // --- NORTH INDIAN CHART ---
         function buildNorthIndianChart(ascDegree, positions) {
-            const left = 140, top = 140, size = 520;
+            const left = 170, top = 140, size = 460;
             const outerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             outerRect.setAttribute("x", left); outerRect.setAttribute("y", top); outerRect.setAttribute("width", size); outerRect.setAttribute("height", size);
             outerRect.setAttribute("fill", "#030611"); outerRect.setAttribute("stroke", "#06b6d4"); outerRect.setAttribute("stroke-width", "3");
@@ -785,7 +798,7 @@
 
                 const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 signText.setAttribute("x", item.x); signText.setAttribute("y", item.y - 25);
-                signText.setAttribute("fill", "#fbbf24"); signText.setAttribute("font-size", "11"); signText.setAttribute("font-weight", "900"); signText.setAttribute("text-anchor", "middle");
+                signText.setAttribute("fill", "#fbbf24"); signText.setAttribute("font-size", "13"); signText.setAttribute("font-weight", "900"); signText.setAttribute("text-anchor", "middle");
                 signText.textContent = signNum;
                 baseChartLayer.appendChild(signText);
 
@@ -795,22 +808,24 @@
                     const pGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
                     pGroup.setAttribute("class", "interactive-planet");
 
-                    const px = item.x + ((pIdx % 2 === 0 ? -1 : 1) * 32);
-                    const py = item.y - 5 + Math.floor(pIdx / 2) * 38;
+                    const px = item.x + ((pIdx % 2 === 0 ? -1 : 1) * 36);
+                    const py = item.y - 5 + Math.floor(pIdx / 2) * 44;
+
+                    planetPositionsMap[pObj.name] = { x: px, y: py };
 
                     const graphic = createPlanetGraphicElement(cfg);
-                    graphic.setAttribute("transform", `translate(${px}, ${py}) scale(0.62)`);
+                    graphic.setAttribute("transform", `translate(${px}, ${py}) scale(0.8)`);
                     pGroup.appendChild(graphic);
 
                     const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    txt.setAttribute("x", px); txt.setAttribute("y", py + 14);
-                    txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "9"); txt.setAttribute("font-weight", "800"); txt.setAttribute("text-anchor", "middle");
+                    txt.setAttribute("x", px); txt.setAttribute("y", py + 18);
+                    txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "11"); txt.setAttribute("font-weight", "900"); txt.setAttribute("text-anchor", "middle");
                     txt.textContent = cfg.label;
                     pGroup.appendChild(txt);
 
                     const subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    subTxt.setAttribute("x", px); subTxt.setAttribute("y", py + 24);
-                    subTxt.setAttribute("fill", "#fbbf24"); subTxt.setAttribute("font-size", "7.5"); subTxt.setAttribute("font-weight", "700"); subTxt.setAttribute("text-anchor", "middle");
+                    subTxt.setAttribute("x", px); subTxt.setAttribute("y", py + 30);
+                    subTxt.setAttribute("fill", "#fbbf24"); subTxt.setAttribute("font-size", "9.5"); subTxt.setAttribute("font-weight", "800"); subTxt.setAttribute("text-anchor", "middle");
                     subTxt.textContent = `${Math.floor(pObj.long % 30)}° ${getNakshatraPadaString(pObj.long).split('-')[0].substring(0,4)}`;
                     pGroup.appendChild(subTxt);
 
