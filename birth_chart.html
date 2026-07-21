@@ -3,75 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vedic Birth Chart Generator - Janam Kundali Wheel</title>
+    <title>Vedic Birth Chart Generator - Janam Kundali</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=500;700;800&display=swap');
         
         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow-x: hidden;
-            overscroll-behavior: none;
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow-x: hidden; overscroll-behavior: none;
         }
 
         body {
             font-family: 'Space Grotesk', sans-serif;
             background: radial-gradient(circle at center, #0c152b 0%, #050814 60%, #010206 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
             box-sizing: border-box;
         }
 
         body::before {
-            content: "";
-            position: fixed;
+            content: ""; position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            z-index: -1;
-            pointer-events: none;
+            z-index: -1; pointer-events: none;
             background-image: 
                 radial-gradient(1px 1px at 25px 35px, #ffffff 100%, transparent),
                 radial-gradient(1.5px 1.5px at 150px 50px, #e0f7fa 100%, transparent),
                 radial-gradient(2px 2px at 420px 400px, #fef08a 100%, transparent);
-            background-size: 550px 550px;
-            opacity: 0.55;
+            background-size: 550px 550px; opacity: 0.55;
         }
         
         .chart-viewport-container {
-            width: 100%;
-            max-width: 960px;
-            aspect-ratio: 1.15 / 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: none;
-            padding: 4px; 
-            box-sizing: border-box;
-            margin-top: -4px;
+            width: 100%; max-width: 960px; aspect-ratio: 1.15 / 1;
+            display: flex; align-items: center; justify-content: center;
+            touch-action: none; padding: 4px; box-sizing: border-box; margin-top: -4px;
         }
 
         #chart {
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            overflow: visible; 
+            width: 100%; height: 100%;
+            touch-action: none; user-select: none;
+            -webkit-user-select: none; overflow: visible; 
         }
 
-        .static-planet { 
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .static-planet { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-        @keyframes spin-earth {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin-earth { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .rotating-earth { animation: spin-earth 30s linear infinite; }
 
         @keyframes sun-shimmer {
@@ -92,50 +68,24 @@
         }
         .glow-rahu { animation: rahu-pulse 3s ease-in-out infinite; }
 
-        .neon-text-cyan {
-            color: #e0f7fa;
-            text-shadow: 0 0 4px #06b6d4, 0 0 10px #06b6d4;
-        }
-        
-        .neon-text-amber {
-            color: #fffdeb;
-            text-shadow: 0 0 4px #fbbf24, 0 0 10px #fbbf24;
-        }
-        
-        .neon-text-emerald {
-            color: #ecfdf5;
-            text-shadow: 0 0 4px #34d399, 0 0 10px #10b981;
-        }
+        .neon-text-cyan { color: #e0f7fa; text-shadow: 0 0 4px #06b6d4, 0 0 10px #06b6d4; }
+        .neon-text-amber { color: #fffdeb; text-shadow: 0 0 4px #fbbf24, 0 0 10px #fbbf24; }
+        .neon-text-emerald { color: #ecfdf5; text-shadow: 0 0 4px #34d399, 0 0 10px #10b981; }
 
-        .hud-text {
-            font-size: 11px;
-            font-weight: 800;
-            fill: #ffffff;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-        
-        @media (max-width: 768px) {
-            .hud-text {
-                font-size: 13px;
-            }
-        }
-
-        .aspect-laser {
-            opacity: 0.85;
-            stroke-width: 2.5;
-            stroke-linecap: round;
-        }
+        .hud-text { font-size: 11px; font-weight: 800; fill: #ffffff; font-family: 'Space Grotesk', sans-serif; }
+        @media (max-width: 768px) { .hud-text { font-size: 13px; } }
+        .aspect-laser { opacity: 0.85; stroke-width: 2.5; stroke-linecap: round; }
     </style>
 </head>
 <body class="text-slate-100 p-2">
 
-    <!-- Top Navigation Header -->
+    <!-- Navigation Bar -->
     <div class="w-full max-w-xl my-1 flex justify-between items-center select-none">
         <a href="/" class="text-xs font-bold text-cyan-400 hover:underline">← Home Hub</a>
         <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">Natal Janam Kundali</span>
     </div>
 
-    <!-- Form Section -->
+    <!-- Input Form -->
     <div id="form-container" class="backdrop-blur-md bg-slate-950/70 p-5 rounded-3xl border-2 border-cyan-400/40 w-full max-w-xl my-2 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
         <h1 class="text-xl font-extrabold text-cyan-200 mb-1">Generate Natal Birth Chart</h1>
         <p class="text-xs text-slate-400 mb-3">Enter birth details to compute your exact Lahiri Kundali wheel.</p>
@@ -174,14 +124,22 @@
         </form>
     </div>
 
-    <!-- State Dashboard HUD -->
-    <div id="chart-hud" class="hidden backdrop-blur-md bg-slate-950/50 p-2 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.25)] border-2 border-cyan-400/40 w-full max-w-sm mb-2 text-center z-10 select-none">
-        <div class="text-[9px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
-        <div id="chart-meta-info" class="text-xs font-bold text-slate-300"></div>
+    <!-- State Dashboard HUD & Selector -->
+    <div id="chart-hud" class="hidden backdrop-blur-md bg-slate-950/50 p-3 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.25)] border-2 border-cyan-400/40 w-full max-w-md mb-2 text-center z-10 select-none">
+        <div class="text-[10px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
+        <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
+        
+        <!-- Format Selector Buttons -->
+        <div class="flex justify-center gap-1.5 my-1 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-3 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow">Western Wheel</button>
+            <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-3 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white">South Indian</button>
+            <button type="button" onclick="switchChartFormat('north')" id="btn-north" class="px-3 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white">North Indian</button>
+        </div>
+
         <div id="status-display" class="text-xs font-black tracking-wide neon-text-amber mt-1">Tap any planet to inspect aspects</div>
     </div>
 
-    <!-- Scale Boundary Container -->
+    <!-- Chart Viewport -->
     <div id="wheel-container" class="hidden chart-viewport-container">
         <svg id="chart" viewBox="-30 0 860 800">
             <defs>
@@ -218,10 +176,8 @@
                 </linearGradient>
 
                 <linearGradient id="grad-mercury" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#ff7c43" />
-                    <stop offset="30%" stop-color="#5c2c16" />
-                    <stop offset="55%" stop-color="#ff6b2b" />
-                    <stop offset="80%" stop-color="#3d1908" />
+                    <stop offset="0%" stop-color="#ff7c43" /><stop offset="30%" stop-color="#5c2c16" />
+                    <stop offset="55%" stop-color="#ff6b2b" /><stop offset="80%" stop-color="#3d1908" />
                     <stop offset="100%" stop-color="#210b02" />
                 </linearGradient>
                 
@@ -236,12 +192,9 @@
                 </radialGradient>
                 
                 <linearGradient id="grad-jupiter" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#ffedd5" />
-                    <stop offset="25%" stop-color="#f97316" />
-                    <stop offset="45%" stop-color="#ffedd5" />
-                    <stop offset="55%" stop-color="#ea580c" />
-                    <stop offset="80%" stop-color="#c2410c" />
-                    <stop offset="100%" stop-color="#3a1207" />
+                    <stop offset="0%" stop-color="#ffedd5" /><stop offset="25%" stop-color="#f97316" />
+                    <stop offset="45%" stop-color="#ffedd5" /><stop offset="55%" stop-color="#ea580c" />
+                    <stop offset="80%" stop-color="#c2410c" /><stop offset="100%" stop-color="#3a1207" />
                 </linearGradient>
                 
                 <radialGradient id="grad-saturn" cx="45%" cy="45%" r="55%">
@@ -249,20 +202,12 @@
                 </radialGradient>
             </defs>
 
-            <circle cx="400" cy="400" r="260" fill="#030611" opacity="0.9" />
-
-            <circle cx="400" cy="400" r="232" stroke="#06b6d4" stroke-width="3" fill="none" filter="url(#neon-glow-cyan)" opacity="0.85"/>
-            <circle cx="400" cy="400" r="232" stroke="#ffffff" stroke-width="0.75" fill="none" opacity="0.95"/>
-            <circle cx="400" cy="400" r="65" stroke="#06b6d4" stroke-width="2.5" fill="none" filter="url(#neon-glow-cyan)" opacity="0.75"/>
-            
+            <g id="base-chart-layer"></g>
             <g id="lagna-highlight-layer"></g>
             <g id="planet-tracks"></g>
             <g id="house-lines"></g>
             <g id="aspect-lines-layer"></g>
             <g id="pointer-lines-layer"></g>
-            
-            <circle cx="400" cy="400" r="44" fill="#3b82f6" opacity="0.15" filter="blur(4px)"/>
-            <circle cx="400" cy="400" r="35" stroke="#3b82f6" stroke-width="2" fill="none" filter="url(#neon-glow-cyan)"/>
             
             <g id="earth-center" class="rotating-earth" style="transform-origin: 400px 400px;">
                 <circle cx="400" cy="400" r="32" fill="#1d4ed8" stroke="#60a5fa" stroke-width="1.5"/>
@@ -284,17 +229,20 @@
     <script>
         const center = { x: 400, y: 400 };
         const statusDisplay = document.getElementById('status-display');
+        const baseChartLayer = document.getElementById('base-chart-layer');
         const houseLinesGroup = document.getElementById('house-lines');
         const planetTracksGroup = document.getElementById('planet-tracks');
         const planetsLayer = document.getElementById('planets-layer');
         const pointerLinesLayer = document.getElementById('pointer-lines-layer');
         const aspectLinesLayer = document.getElementById('aspect-lines-layer');
         const externalHudLayer = document.getElementById('external-hud-layer');
+        const earthCenter = document.getElementById('earth-center');
         const chart = document.getElementById('chart');
 
         let viewMatrix = { xMin: -30, yMin: 0, width: 860, height: 800 };
         let dynamicLabelRadius = 285;
-        
+        let currentChartStyle = "western"; // "western", "south", or "north"
+
         function adaptViewportDimensions() {
             if (window.innerWidth > 768) {
                 viewMatrix = { xMin: -20, yMin: 120, width: 840, height: 690 };
@@ -306,7 +254,7 @@
                 document.querySelector('.chart-viewport-container').style.aspectRatio = "1 / 1";
             }
             chart.setAttribute("viewBox", `${viewMatrix.xMin} ${viewMatrix.yMin} ${viewMatrix.width} ${viewMatrix.height}`);
-            if (Object.keys(currentLongitudes).length > 0) {
+            if (Object.keys(currentLongitudes).length > 0 && currentChartStyle === "western") {
                 layoutHUDsAntiCollision();
             }
         }
@@ -356,102 +304,56 @@
             return `${NAKSHATRAS[nakshatraIndex]}-${currentPada}`;
         }
 
-        function drawPlanetaryAspects(pName, sourceLong) {
-            aspectLinesLayer.innerHTML = "";
-            if (!pName || !PLANET_ASPECTS[pName]) return;
-
-            const cfg = PLANET_CONFIGS[pName];
-            const sourceRad = (sourceLong - 90) * (Math.PI / 180);
-            const startX = center.x + Math.cos(sourceRad) * cfg.radius;
-            const startY = center.y + Math.sin(sourceRad) * cfg.radius;
-
-            PLANET_ASPECTS[pName].forEach(aspectHouse => {
-                const targetLong = (sourceLong + (aspectHouse - 1) * 30) % 360;
-                const targetRad = (targetLong - 90) * (Math.PI / 180);
-                const endX = center.x + Math.cos(targetRad) * 232;
-                const endY = center.y + Math.sin(targetRad) * 232;
-
-                const laser = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                laser.setAttribute("x1", startX); laser.setAttribute("y1", startY);
-                laser.setAttribute("x2", endX); laser.setAttribute("y2", endY);
-                laser.setAttribute("stroke", cfg.color);
-                laser.setAttribute("class", "aspect-laser");
-                laser.setAttribute("filter", "url(#neon-glow-cyan)");
-                aspectLinesLayer.appendChild(laser);
+        function switchChartFormat(style) {
+            currentChartStyle = style;
+            ['western', 'south', 'north'].forEach(s => {
+                const btn = document.getElementById(`btn-${s}`);
+                if (s === style) {
+                    btn.className = "px-3 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow";
+                } else {
+                    btn.className = "px-3 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white";
+                }
             });
 
-            statusDisplay.innerText = `Aspects Laser Activated: [${pName.toUpperCase()}]`;
+            if (Object.keys(currentLongitudes).length > 0) {
+                renderSelectedChartType();
+            }
         }
 
-        function highlightLagnaSign(ascDegree) {
-            const lagnaLayer = document.getElementById('lagna-highlight-layer');
-            lagnaLayer.innerHTML = "";
-
-            const lagnaSignIndex = Math.floor(ascDegree / 30);
-            const startAngleRad = (lagnaSignIndex * 30 - 90) * (Math.PI / 180);
-            const endAngleRad = ((lagnaSignIndex + 1) * 30 - 90) * (Math.PI / 180);
-
-            const rInner = 65, rOuter = 232;
-            const x1Inner = center.x + Math.cos(startAngleRad) * rInner;
-            const y1Inner = center.y + Math.sin(startAngleRad) * rInner;
-            const x1Outer = center.x + Math.cos(startAngleRad) * rOuter;
-            const y1Outer = center.y + Math.sin(startAngleRad) * rOuter;
-
-            const x2Inner = center.x + Math.cos(endAngleRad) * rInner;
-            const y2Inner = center.y + Math.sin(endAngleRad) * rInner;
-            const x2Outer = center.x + Math.cos(endAngleRad) * rOuter;
-            const y2Outer = center.y + Math.sin(endAngleRad) * rOuter;
-
-            const sectorPath = `
-                M ${x1Inner} ${y1Inner}
-                L ${x1Outer} ${y1Outer}
-                A ${rOuter} ${rOuter} 0 0 1 ${x2Outer} ${y2Outer}
-                L ${x2Inner} ${y2Inner}
-                A ${rInner} ${rInner} 0 0 0 ${x1Inner} ${y1Inner}
-                Z
-            `;
-
-            const wedge = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            wedge.setAttribute("d", sectorPath);
-            wedge.setAttribute("fill", "#fbbf24");
-            wedge.setAttribute("fill-opacity", "0.15");
-            wedge.setAttribute("stroke", "#fbbf24");
-            wedge.setAttribute("stroke-width", "2");
-            wedge.setAttribute("filter", "url(#neon-glow-gold)");
-            lagnaLayer.appendChild(wedge);
-
-            // Lagna Star Burst Badge
-            const ascRad = (ascDegree - 90) * (Math.PI / 180);
-            const starX = center.x + Math.cos(ascRad) * 232;
-            const starY = center.y + Math.sin(ascRad) * 232;
-
-            const starGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            starGroup.setAttribute("transform", `translate(${starX}, ${starY})`);
-
-            const starPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            starPath.setAttribute("d", "M 0 -14 L 4 -4 L 14 -4 L 6 2 L 9 12 L 0 6 L -9 12 L -6 2 L -14 -4 L -4 -4 Z");
-            starPath.setAttribute("fill", "#ef4444");
-            starPath.setAttribute("stroke", "#fde047");
-            starPath.setAttribute("stroke-width", "2");
-            starPath.setAttribute("filter", "url(#neon-glow-gold)");
-
-            const starText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            starText.setAttribute("x", "0"); starText.setAttribute("y", "22");
-            starText.setAttribute("fill", "#fde047"); starText.setAttribute("font-size", "10");
-            starText.setAttribute("font-weight", "900"); starText.setAttribute("text-anchor", "middle");
-            starText.textContent = "LAGNA";
-
-            starGroup.appendChild(starPath);
-            starGroup.appendChild(starText);
-            lagnaLayer.appendChild(starGroup);
-        }
-
-        function buildStaticWheelStructure(ascDegree) {
+        function renderSelectedChartType() {
+            baseChartLayer.innerHTML = "";
             houseLinesGroup.innerHTML = "";
             planetTracksGroup.innerHTML = "";
             planetsLayer.innerHTML = "";
             pointerLinesLayer.innerHTML = "";
             externalHudLayer.innerHTML = "";
+            aspectLinesLayer.innerHTML = "";
+
+            if (currentChartStyle === "western") {
+                earthCenter.style.display = "block";
+                buildWesternWheel(lagnaLongitude);
+                renderWesternPlanets(currentLongitudes);
+            } else if (currentChartStyle === "south") {
+                earthCenter.style.display = "none";
+                buildSouthIndianChart(lagnaLongitude, currentLongitudes);
+            } else if (currentChartStyle === "north") {
+                earthCenter.style.display = "none";
+                buildNorthIndianChart(lagnaLongitude, currentLongitudes);
+            }
+        }
+
+        // --- WESTERN WHEEL ---
+        function buildWesternWheel(ascDegree) {
+            const circleBg = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circleBg.setAttribute("cx", "400"); circleBg.setAttribute("cy", "400"); circleBg.setAttribute("r", "260");
+            circleBg.setAttribute("fill", "#030611"); circleBg.setAttribute("opacity", "0.9");
+            baseChartLayer.appendChild(circleBg);
+
+            const circleOuter = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circleOuter.setAttribute("cx", "400"); circleOuter.setAttribute("cy", "400"); circleOuter.setAttribute("r", "232");
+            circleOuter.setAttribute("stroke", "#06b6d4"); circleOuter.setAttribute("stroke-width", "3"); circleOuter.setAttribute("fill", "none");
+            circleOuter.setAttribute("filter", "url(#neon-glow-cyan)");
+            baseChartLayer.appendChild(circleOuter);
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
 
@@ -459,11 +361,6 @@
                 const angleRad = (i * 30 - 90) * (Math.PI / 180);
                 const x1 = center.x + Math.cos(angleRad) * 65; const y1 = center.y + Math.sin(angleRad) * 65;
                 const x2 = center.x + Math.cos(angleRad) * 232; const y2 = center.y + Math.sin(angleRad) * 232;
-
-                const glowLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                glowLine.setAttribute("x1", x1); glowLine.setAttribute("y1", y1); glowLine.setAttribute("x2", x2); glowLine.setAttribute("y2", y2);
-                glowLine.setAttribute("stroke", "#06b6d4"); glowLine.setAttribute("stroke-width", "4.5"); glowLine.setAttribute("opacity", "0.25");
-                houseLinesGroup.appendChild(glowLine);
 
                 const coreLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 coreLine.setAttribute("x1", x1); coreLine.setAttribute("y1", y1); coreLine.setAttribute("x2", x2); coreLine.setAttribute("y2", y2);
@@ -479,10 +376,8 @@
                 text.textContent = ZODIAC_SIGNS[i].substring(0, 3).toUpperCase();
                 houseLinesGroup.appendChild(text);
 
-                // House Numbers (H1 to H12) relative to Lagna
                 let houseNumber = ((i - lagnaSignIdx + 12) % 12) + 1;
-                const hx = center.x + Math.cos(textAngle) * 52;
-                const hy = center.y + Math.sin(textAngle) * 52;
+                const hx = center.x + Math.cos(textAngle) * 52; const hy = center.y + Math.sin(textAngle) * 52;
                 const hText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 hText.setAttribute("x", hx); hText.setAttribute("y", hy);
                 hText.setAttribute("fill", houseNumber === 1 ? "#fde047" : "#06b6d4");
@@ -491,75 +386,26 @@
                 hText.textContent = `H${houseNumber}`;
                 houseLinesGroup.appendChild(hText);
             }
+        }
 
+        function renderWesternPlanets(positions) {
             Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
-                const track = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                track.setAttribute("cx", center.x); track.setAttribute("cy", center.y); track.setAttribute("r", cfg.radius);
-                track.setAttribute("stroke", cfg.color); track.setAttribute("stroke-width", "1.25"); track.setAttribute("fill", "none"); track.setAttribute("opacity", "0.22");
-                planetTracksGroup.appendChild(track);
-
                 const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                group.setAttribute("id", `${name}-group`);
-                group.setAttribute("class", "static-planet");
+                group.setAttribute("id", `${name}-group`); group.setAttribute("class", "static-planet");
 
                 const orbContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 orbContainer.setAttribute("transform", `translate(${center.x}, ${center.y - cfg.radius})`);
 
-                if (cfg.type === "dragon-head") {
-                    const headGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                    headGroup.setAttribute("class", "glow-rahu");
-                    const headPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    headPath.setAttribute("d", "M0,-16 L5,-7 L13,-9 L7,0 L11,13 L3,7 L0,16 L-3,7 L-11,13 L-7,0 L-13,-9 L-5,-7 Z");
-                    headPath.setAttribute("fill", "#111827"); headPath.setAttribute("stroke", "#f43f5e"); headPath.setAttribute("stroke-width", "2.5");
-                    headGroup.appendChild(headPath); orbContainer.appendChild(headGroup);
-                } else if (cfg.type === "dragon-tail") {
-                    const tailPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    tailPath.setAttribute("d", "M0,-15 C9,-10 13,-2 0,7 C-13,2 -5,-6 0,-15 M0,5 C5,9 0,16 0,16");
-                    tailPath.setAttribute("fill", "#022c22"); tailPath.setAttribute("stroke", "#34d399"); tailPath.setAttribute("stroke-width", "2.5");
-                    orbContainer.appendChild(tailPath);
-                } else if (cfg.type === "sun") {
-                    const sunGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                    sunGroup.setAttribute("class", "glow-sun-white");
-                    const rayMatrix = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                    rayMatrix.setAttribute("class", "sun-ray-matrix");
-                    for (let r = 0; r < 16; r++) {
-                        const rayAngle = (r * 22.5);
-                        const ray = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-                        let length = (r % 2 === 0) ? 42 : 26; let width = (r % 2 === 0) ? 4 : 2.5;
-                        ray.setAttribute("points", `0,${-width} ${length},0 0,${width} ${-length/4},0`);
-                        ray.setAttribute("fill", "url(#grad-sun-ray)"); ray.setAttribute("transform", `rotate(${rayAngle})`);
-                        rayMatrix.appendChild(ray);
-                    }
-                    sunGroup.appendChild(rayMatrix);
-                    const core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    core.setAttribute("cx", "0"); core.setAttribute("cy", "0"); core.setAttribute("r", cfg.size); core.setAttribute("fill", "url(#grad-sun-core)"); core.setAttribute("stroke", "#ffffff"); core.setAttribute("stroke-width", "2");
-                    sunGroup.appendChild(core); orbContainer.appendChild(sunGroup);
-                } else {
-                    if (cfg.type === "saturn") {
-                        const ring = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-                        ring.setAttribute("cx", "0"); ring.setAttribute("cy", "0"); ring.setAttribute("rx", (cfg.size * 1.8)); ring.setAttribute("ry", (cfg.size * 0.45));
-                        ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#f59e0b"); ring.setAttribute("stroke-width", "4"); ring.setAttribute("transform", "rotate(-11)");
-                        orbContainer.appendChild(ring);
-                    }
-                    const body = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    body.setAttribute("cx", "0"); body.setAttribute("cy", "0"); body.setAttribute("r", cfg.size); body.setAttribute("fill", cfg.grad); body.setAttribute("stroke", "#1e293b"); body.setAttribute("stroke-width", "1");
-                    orbContainer.appendChild(body);
-                    if (cfg.type === "jupiter") {
-                        const spot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                        spot.setAttribute("cx", "5"); spot.setAttribute("cy", "5"); spot.setAttribute("r", "3.5"); spot.setAttribute("fill", "#9a3412");
-                        orbContainer.appendChild(spot);
-                    }
-                    const shadingCore = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    shadingCore.setAttribute("cx", "0"); shadingCore.setAttribute("cy", "0"); shadingCore.setAttribute("r", cfg.size); shadingCore.setAttribute("fill", "url(#sphere-shading)");
-                    orbContainer.appendChild(shadingCore);
-                }
+                const body = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                body.setAttribute("cx", "0"); body.setAttribute("cy", "0"); body.setAttribute("r", cfg.size);
+                body.setAttribute("fill", cfg.grad || cfg.color); body.setAttribute("stroke", "#1e293b"); body.setAttribute("stroke-width", "1");
+                orbContainer.appendChild(body);
+                group.appendChild(orbContainer);
+                planetsLayer.appendChild(group);
 
-                group.appendChild(orbContainer); planetsLayer.appendChild(group);
-
-                // On Planet Click Trigger Laser Aspects
-                group.addEventListener('click', () => {
-                    drawPlanetaryAspects(name, currentLongitudes[name]);
-                });
+                const long = positions[name];
+                group.style.transform = `rotate(${long}deg)`;
+                group.style.transformOrigin = `${center.x}px ${center.y}px`;
 
                 const pointerLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 pointerLine.setAttribute("id", `${name}-pointer`);
@@ -578,12 +424,11 @@
                 hudGroup.appendChild(nameText); hudGroup.appendChild(degText); hudGroup.appendChild(nakText);
                 externalHudLayer.appendChild(hudGroup);
             });
+            layoutHUDsAntiCollision();
         }
 
         function layoutHUDsAntiCollision() {
-            const items = Object.entries(currentLongitudes).map(([name, long]) => {
-                return { name, long: (long % 360 + 360) % 360 };
-            });
+            const items = Object.entries(currentLongitudes).map(([name, long]) => ({ name, long: (long % 360 + 360) % 360 }));
             items.sort((a, b) => a.long - b.long);
             
             const minSpacingDegrees = window.innerWidth <= 768 ? 14.5 : 12.0; 
@@ -624,30 +469,148 @@
                 const pointerElement = document.getElementById(`${pName}-pointer`);
                 const hudNode = document.getElementById(`${pName}-hud`);
                 
-                hudNode.style.display = "block";
-                pointerElement.setAttribute("d", `M ${planetX} ${planetY} L ${edgeX} ${edgeY} L ${labelX} ${labelY}`);
-                hudNode.setAttribute("transform", `translate(${labelX}, ${labelY})`);
-                
-                let textAnchor = Math.cos(adjustedRad) > 0.3 ? "start" : (Math.cos(adjustedRad) < -0.3 ? "end" : "middle");
-                Array.from(hudNode.children).forEach(child => child.setAttribute("text-anchor", textAnchor));
+                if (hudNode && pointerElement) {
+                    hudNode.style.display = "block";
+                    pointerElement.setAttribute("d", `M ${planetX} ${planetY} L ${edgeX} ${edgeY} L ${labelX} ${labelY}`);
+                    hudNode.setAttribute("transform", `translate(${labelX}, ${labelY})`);
+                    
+                    let textAnchor = Math.cos(adjustedRad) > 0.3 ? "start" : (Math.cos(adjustedRad) < -0.3 ? "end" : "middle");
+                    Array.from(hudNode.children).forEach(child => child.setAttribute("text-anchor", textAnchor));
 
-                document.getElementById(`${pName}-hud-deg`).textContent = getZodiacCoordinateString(naturalLong);
-                document.getElementById(`${pName}-hud-nak`).textContent = getNakshatraPadaString(naturalLong);
-            });
-        }
-
-        function renderNatalWheel(positions) {
-            Object.entries(positions).forEach(([pName, long]) => {
-                const targetGroup = document.getElementById(`${pName}-group`);
-                if (targetGroup) {
-                    targetGroup.style.transform = `rotate(${long}deg)`;
-                    targetGroup.style.transformOrigin = `${center.x}px ${center.y}px`;
-                    currentLongitudes[pName] = long;
+                    document.getElementById(`${pName}-hud-deg`).textContent = getZodiacCoordinateString(naturalLong);
+                    document.getElementById(`${pName}-hud-nak`).textContent = getNakshatraPadaString(naturalLong);
                 }
             });
-            layoutHUDsAntiCollision();
         }
 
+        // --- SOUTH INDIAN CHART ---
+        function buildSouthIndianChart(ascDegree, positions) {
+            const size = 520, left = 140, top = 140, box = size / 4;
+            const outerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            outerRect.setAttribute("x", left); outerRect.setAttribute("y", top); outerRect.setAttribute("width", size); outerRect.setAttribute("height", size);
+            outerRect.setAttribute("fill", "#030611"); outerRect.setAttribute("stroke", "#06b6d4"); outerRect.setAttribute("stroke-width", "3");
+            baseChartLayer.appendChild(outerRect);
+
+            const innerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            innerRect.setAttribute("x", left + box); innerRect.setAttribute("y", top + box); innerRect.setAttribute("width", box * 2); innerRect.setAttribute("height", box * 2);
+            innerRect.setAttribute("fill", "#050814"); innerRect.setAttribute("stroke", "#06b6d4"); innerRect.setAttribute("stroke-width", "2");
+            baseChartLayer.appendChild(innerRect);
+
+            const gridCoords = [
+                { s: 11, col: 1, row: 0 }, { s: 0, col: 2, row: 0 }, { s: 1, col: 3, row: 0 }, { s: 2, col: 3, row: 1 },
+                { s: 3, col: 3, row: 2 }, { s: 4, col: 3, row: 3 }, { s: 5, col: 2, row: 3 }, { s: 6, col: 1, row: 3 },
+                { s: 7, col: 0, row: 3 }, { s: 8, col: 0, row: 2 }, { s: 9, col: 0, row: 1 }, { s: 10, col: 0, row: 0 }
+            ];
+
+            const signPlanets = {};
+            for (let i = 0; i < 12; i++) signPlanets[i] = [];
+            Object.entries(positions).forEach(([pName, long]) => {
+                const sIdx = Math.floor(long / 30);
+                signPlanets[sIdx].push(PLANET_CONFIGS[pName].label);
+            });
+
+            const lagnaSignIdx = Math.floor(ascDegree / 30);
+
+            gridCoords.forEach(item => {
+                const x = left + item.col * box;
+                const y = top + item.row * box;
+
+                const cell = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                cell.setAttribute("x", x); cell.setAttribute("y", y); cell.setAttribute("width", box); cell.setAttribute("height", box);
+                cell.setAttribute("fill", "none"); cell.setAttribute("stroke", "#1e293b"); cell.setAttribute("stroke-width", "1");
+                baseChartLayer.appendChild(cell);
+
+                const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                signText.setAttribute("x", x + 6); signText.setAttribute("y", y + 14);
+                signText.setAttribute("fill", "#38bdf8"); signText.setAttribute("font-size", "10"); signText.setAttribute("font-weight", "700");
+                signText.textContent = ZODIAC_SIGNS[item.s].substring(0, 3).toUpperCase();
+                baseChartLayer.appendChild(signText);
+
+                if (item.s === lagnaSignIdx) {
+                    const lText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    lText.setAttribute("x", x + box - 8); lText.setAttribute("y", y + 14);
+                    lText.setAttribute("fill", "#fde047"); lText.setAttribute("font-size", "10"); lText.setAttribute("font-weight", "900"); lText.setAttribute("text-anchor", "end");
+                    lText.textContent = "ASC";
+                    baseChartLayer.appendChild(lText);
+                }
+
+                const pList = signPlanets[item.s];
+                pList.forEach((pLabel, pIdx) => {
+                    const pText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    pText.setAttribute("x", x + 10 + (pIdx % 2) * 55); pText.setAttribute("y", y + 36 + Math.floor(pIdx / 2) * 18);
+                    pText.setAttribute("fill", "#ffffff"); pText.setAttribute("font-size", "11"); pText.setAttribute("font-weight", "800");
+                    pText.textContent = pLabel;
+                    baseChartLayer.appendChild(pText);
+                });
+            });
+        }
+
+        // --- NORTH INDIAN CHART ---
+        function buildNorthIndianChart(ascDegree, positions) {
+            const left = 140, top = 140, size = 520;
+            const outerRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            outerRect.setAttribute("x", left); outerRect.setAttribute("y", top); outerRect.setAttribute("width", size); outerRect.setAttribute("height", size);
+            outerRect.setAttribute("fill", "#030611"); outerRect.setAttribute("stroke", "#06b6d4"); outerRect.setAttribute("stroke-width", "3");
+            baseChartLayer.appendChild(outerRect);
+
+            const lines = [
+                `M ${left} ${top} L ${left+size} ${top+size}`,
+                `M ${left+size} ${top} L ${left} ${top+size}`,
+                `M ${left+size/2} ${top} L ${left} ${top+size/2} L ${left+size/2} ${top+size} L ${left+size} ${top+size/2} Z`
+            ];
+            lines.forEach(d => {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("d", d); path.setAttribute("fill", "none"); path.setAttribute("stroke", "#06b6d4"); path.setAttribute("stroke-width", "1.5");
+                baseChartLayer.appendChild(path);
+            });
+
+            const houseCenters = [
+                { h: 1, x: left + size/2, y: top + size/6 },
+                { h: 2, x: left + size/4, y: top + size/12 },
+                { h: 3, x: left + size/12, y: top + size/4 },
+                { h: 4, x: left + size/4, y: top + size/2 },
+                { h: 5, x: left + size/12, y: top + (size*3)/4 },
+                { h: 6, x: left + size/4, y: top + (size*11)/12 },
+                { h: 7, x: left + size/2, y: top + (size*5)/6 },
+                { h: 8, x: left + (size*3)/4, y: top + (size*11)/12 },
+                { h: 9, x: left + (size*11)/12, y: top + (size*3)/4 },
+                { h: 10, x: left + (size*3)/4, y: top + size/2 },
+                { h: 11, x: left + (size*11)/12, y: top + size/4 },
+                { h: 12, x: left + (size*3)/4, y: top + size/12 }
+            ];
+
+            const lagnaSignIdx = Math.floor(ascDegree / 30);
+
+            const housePlanets = {};
+            for (let i = 1; i <= 12; i++) housePlanets[i] = [];
+
+            Object.entries(positions).forEach(([pName, long]) => {
+                const planetSignIdx = Math.floor(long / 30);
+                const houseNum = ((planetSignIdx - lagnaSignIdx + 12) % 12) + 1;
+                housePlanets[houseNum].push(PLANET_CONFIGS[pName].label);
+            });
+
+            houseCenters.forEach(item => {
+                const signNum = ((lagnaSignIdx + item.h - 1) % 12) + 1;
+
+                const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                signText.setAttribute("x", item.x); signText.setAttribute("y", item.y - 12);
+                signText.setAttribute("fill", "#fbbf24"); signText.setAttribute("font-size", "11"); signText.setAttribute("font-weight", "900"); signText.setAttribute("text-anchor", "middle");
+                signText.textContent = signNum;
+                baseChartLayer.appendChild(signText);
+
+                const pList = housePlanets[item.h];
+                pList.forEach((pLabel, pIdx) => {
+                    const pText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    pText.setAttribute("x", item.x); pText.setAttribute("y", item.y + 6 + (pIdx * 14));
+                    pText.setAttribute("fill", "#ffffff"); pText.setAttribute("font-size", "11"); pText.setAttribute("font-weight", "800"); pText.setAttribute("text-anchor", "middle");
+                    pText.textContent = pLabel;
+                    baseChartLayer.appendChild(pText);
+                });
+            });
+        }
+
+        // Form Submission
         document.getElementById('chart-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData();
@@ -666,12 +629,12 @@
                 document.getElementById('wheel-container').classList.remove('hidden');
 
                 lagnaLongitude = data.ascendant;
+                currentLongitudes = data.positions;
+
                 document.getElementById('chart-owner-name').innerText = `${data.name}'s Janam Kundali`;
                 document.getElementById('chart-meta-info').innerText = `${data.dob} | ${data.tob} | Lagna: ${getZodiacCoordinateString(lagnaLongitude)}`;
 
-                buildStaticWheelStructure(lagnaLongitude);
-                highlightLagnaSign(lagnaLongitude);
-                renderNatalWheel(data.positions);
+                renderSelectedChartType();
             } else {
                 alert(data.message);
             }
