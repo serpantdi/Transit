@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Matrix - Vedic Astrology Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=500;700;800&display=swap');
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: radial-gradient(circle at center, #0c152b 0%, #050814 60%, #010206 100%);
+            min-height: 100vh;
+        }
+        .neon-glow-cyan { text-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4; }
+        .neon-glow-amber { text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24; }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col justify-between p-6">
+
+    <header class="text-center my-8 select-none">
+        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight neon-glow-cyan text-cyan-200">
+            नवग्रह • COSMIC MATRIX
+        </h1>
+        <p class="text-xs sm:text-sm tracking-widest uppercase mt-3 text-cyan-400 font-semibold">
+            Precision Sidereal Vedic Astrological Intelligence
+        </p>
+    </header>
+
+    <main class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 my-auto w-full">
+        
+        <!-- Birth Chart Card -->
+        <div class="backdrop-blur-md bg-slate-950/60 p-8 rounded-3xl border-2 border-cyan-500/40 hover:border-cyan-400 transition-all duration-300 shadow-[0_0_30px_rgba(6,182,212,0.2)] flex flex-col justify-between">
+            <div>
+                <div class="text-cyan-400 font-bold tracking-widest text-xs uppercase mb-2">Personal Natal Chart</div>
+                <h2 class="text-2xl font-black text-white mb-4">Free Birth Chart Generator</h2>
+                <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                    Calculate your exact Janam Kundali wheel using Lahiri Ayanamsha. Inspect interactive aspect lasers for your fixed planetary placements.
+                </p>
+            </div>
+            <a href="/birth-chart" class="w-full py-3.5 px-6 rounded-xl font-bold text-center bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition duration-200 shadow-lg">
+                Generate Kundali Wheel →
+            </a>
+        </div>
+
+        <!-- Transit Wheel Card -->
+        <div class="backdrop-blur-md bg-slate-950/60 p-8 rounded-3xl border-2 border-amber-500/40 hover:border-amber-400 transition-all duration-300 shadow-[0_0_30px_rgba(251,191,36,0.2)] flex flex-col justify-between">
+            <div>
+                <div class="text-amber-400 font-bold tracking-widest text-xs uppercase mb-2">Real-Time Dynamics</div>
+                <h2 class="text-2xl font-black text-white mb-4">Interactive Transit Wheel</h2>
+                <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                    Scrub through celestial timeline axes in real time. Drag planets along their orbital paths to simulate past and future transits smoothly.
+                </p>
+            </div>
+            <a href="/transit-wheel" class="w-full py-3.5 px-6 rounded-xl font-bold text-center bg-amber-500 hover:bg-amber-400 text-slate-950 transition duration-200 shadow-lg">
+                Launch Transit Wheel →
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="text-center text-xs text-slate-500 my-6 select-none">
+        Powered by Swiss Ephemeris (sweph) & FastAPI
+    </footer>
+
+</body>
+</html>
