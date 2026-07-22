@@ -380,91 +380,160 @@
             return `${NAKSHATRAS[nakshatraIndex]}-${currentPada}`;
         }
 
-        // --- DIVISIONAL CHARTS (VARGAS) COMPUTATION ENGINE ---
-        function calculateVargaLongitude(long, vargaFactor) {
-            let norm = (long % 360 + 360) % 360;
-            let signIdx = Math.floor(norm / 30);
-            let degInSign = norm % 30;
+       // --- ACCURATE PARASHARI VARGA (DIVISIONAL) COMPUTATION ENGINE ---
+function calculateVargaLongitude(long, vargaFactor) {
+    let norm = (long % 360 + 360) % 360;
+    let signIdx = Math.floor(norm / 30);
+    let degInSign = norm % 30;
+    let targetSignIdx = signIdx;
 
-            if (vargaFactor === 1) return norm; // D1
-            
-            if (vargaFactor === 9) { // D9 Navamsa
-                let navSegment = Math.floor(degInSign / (30 / 9));
-                let startSignIdx;
-                if ([0, 4, 8].includes(signIdx)) startSignIdx = 0; // Fire signs start Aries
-                else if ([1, 5, 9].includes(signIdx)) startSignIdx = 9; // Earth signs start Capricorn
-                else if ([2, 6, 10].includes(signIdx)) startSignIdx = 6; // Air signs start Libra
-                else startSignIdx = 3; // Water signs start Cancer
-                return ((startSignIdx + navSegment) % 12) * 30 + 15;
+    switch (vargaFactor) {
+        case 1: // D1 Rashi
+            targetSignIdx = signIdx;
+            break;
+
+        case 2: // D2 Hora (Parashari: Sun/Moon rules)
+            const isOddD2 = (signIdx % 2 === 0);
+            targetSignIdx = (degInSign < 15) ? (isOddD2 ? 4 : 3) : (isOddD2 ? 3 : 4);
+            break;
+
+        case 3: // D3 Drekkana (1st, 5th, 9th signs)
+            const partD3 = Math.floor(degInSign / 10);
+            targetSignIdx = (signIdx + partD3 * 4) % 12;
+            break;
+
+        case 4: // D4 Chaturthamsa (1st, 4th, 7th, 10th signs)
+            const partD4 = Math.floor(degInSign / 7.5);
+            targetSignIdx = (signIdx + partD4 * 3) % 12;
+            break;
+
+        case 7: // D7 Saptamsa (Odd: Same sign, Even: 7th sign)
+            const partD7 = Math.floor(degInSign / (30 / 7));
+            targetSignIdx = (signIdx % 2 === 0) ? (signIdx + partD7) % 12 : (signIdx + 6 + partD7) % 12;
+            break;
+
+        case 9: // D9 Navamsa (Fire: Aries, Earth: Cap, Air: Lib, Water: Can)
+            const partD9 = Math.floor(degInSign / (30 / 9));
+            let startD9 = [0, 4, 8].includes(signIdx) ? 0 : [1, 5, 9].includes(signIdx) ? 9 : [2, 6, 10].includes(signIdx) ? 6 : 3;
+            targetSignIdx = (startD9 + partD9) % 12;
+            break;
+
+        case 10: // D10 Dasamsa (Odd: Same sign, Even: 9th sign)
+            const partD10 = Math.floor(degInSign / 3);
+            targetSignIdx = (signIdx % 2 === 0) ? (signIdx + partD10) % 12 : (signIdx + 8 + partD10) % 12;
+            break;
+
+        case 12: // D12 Dwadasamsa (Starts from same sign)
+            const partD12 = Math.floor(degInSign / 2.5);
+            targetSignIdx = (signIdx + partD12) % 12;
+            break;
+
+        case 16: // D16 Shodasamsa (Movable: Aries, Fixed: Leo, Dual: Sag)
+            const partD16 = Math.floor(degInSign / (30 / 16));
+            let startD16 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 4 : 8;
+            targetSignIdx = (startD16 + partD16) % 12;
+            break;
+
+        case 20: // D20 Vimsamsa (Movable: Aries, Fixed: Sag, Dual: Leo)
+            const partD20 = Math.floor(degInSign / 1.5);
+            let startD20 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 8 : 4;
+            targetSignIdx = (startD20 + partD20) % 12;
+            break;
+
+        case 24: // D24 Siddhamsa (Odd: Leo, Even: Cancer)
+            const partD24 = Math.floor(degInSign / 1.25);
+            targetSignIdx = (signIdx % 2 === 0) ? (4 + partD24) % 12 : (3 + partD24) % 12;
+            break;
+
+        case 27: // D27 Bhamsa (Fire: Aries, Earth: Cancer, Air: Lib, Water: Cap)
+            const partD27 = Math.floor(degInSign / (30 / 27));
+            let startD27 = [0, 4, 8].includes(signIdx) ? 0 : [1, 5, 9].includes(signIdx) ? 3 : [2, 6, 10].includes(signIdx) ? 6 : 9;
+            targetSignIdx = (startD27 + partD27) % 12;
+            break;
+
+        case 30: // D30 Trimsamsa (Elements rule)
+            if (signIdx % 2 === 0) { // Odd Sign
+                targetSignIdx = degInSign < 5 ? 0 : degInSign < 10 ? 10 : degInSign < 18 ? 8 : degInSign < 25 ? 2 : 1;
+            } else { // Even Sign
+                targetSignIdx = degInSign < 5 ? 1 : degInSign < 10 ? 2 : degInSign < 18 ? 8 : degInSign < 25 ? 10 : 0;
             }
+            break;
 
-            if (vargaFactor === 10) { // D10 Dasamsa
-                let dasSegment = Math.floor(degInSign / 3);
-                let startSignIdx = (signIdx % 2 === 0) ? signIdx : (signIdx + 8) % 12;
-                return ((startSignIdx + dasSegment) % 12) * 30 + 15;
-            }
+        case 40: // D40 Khavedamsa (Odd: Aries, Even: Libra)
+            const partD40 = Math.floor(degInSign / 0.75);
+            targetSignIdx = (signIdx % 2 === 0) ? (0 + partD40) % 12 : (6 + partD40) % 12;
+            break;
 
-            // General Harmonic Varga Fallback Division
-            let segmentSpan = 30 / vargaFactor;
-            let segIdx = Math.floor(degInSign / segmentSpan);
-            let targetSignIdx = (signIdx * vargaFactor + segIdx) % 12;
-            return targetSignIdx * 30 + 15;
-        }
+        case 45: // D45 Akshavedamsa (Movable: Aries, Fixed: Leo, Dual: Sag)
+            const partD45 = Math.floor(degInSign / (30 / 45));
+            let startD45 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 4 : 8;
+            targetSignIdx = (startD45 + partD45) % 12;
+            break;
 
-        function switchVargaChart(vargaCode) {
-            activeVarga = vargaCode;
-            const factor = parseInt(vargaCode.replace('D', '')) || 1;
+        case 60: // D60 Shashtiamsa (Starts from same sign)
+            const partD60 = Math.floor(degInSign / 0.5);
+            targetSignIdx = (signIdx + partD60) % 12;
+            break;
 
-            currentLongitudes = {};
-            Object.entries(rawPositions).forEach(([pName, long]) => {
-                currentLongitudes[pName] = calculateVargaLongitude(long, factor);
-            });
+        default:
+            targetSignIdx = signIdx;
+    }
 
-            renderSelectedChartType();
-            statusDisplay.innerText = `Viewing ${vargaCode} Divisional Chart`;
-        }
+    // Proportional intra-sign degree placement to prevent overlapping
+    let segSize = 30 / vargaFactor;
+    let degreeFraction = (degInSign % segSize) / segSize;
+    return targetSignIdx * 30 + (degreeFraction * 30);
+}
 
-        function switchChartFormat(style) {
-            currentChartStyle = style;
-            ['western', 'south', 'north'].forEach(s => {
-                const btn = document.getElementById(`btn-${s}`);
-                if (s === style) {
-                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow";
-                } else {
-                    btn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white";
-                }
-            });
+// Global active Varga Lagna variable
+let activeVargaLagna = 0;
 
-            if (Object.keys(currentLongitudes).length > 0) {
-                renderSelectedChartType();
-            }
-        }
+function switchVargaChart(vargaCode) {
+    activeVarga = vargaCode;
+    const factor = parseInt(vargaCode.replace('D', '')) || 1;
 
-        function renderSelectedChartType() {
-            baseChartLayer.innerHTML = "";
-            houseLinesGroup.innerHTML = "";
-            planetTracksGroup.innerHTML = "";
-            planetsLayer.innerHTML = "";
-            pointerLinesLayer.innerHTML = "";
-            externalHudLayer.innerHTML = "";
-            aspectLinesLayer.innerHTML = "";
-            lagnaLayer.innerHTML = "";
-            planetPositionsMap = {};
+    // Recalculate Varga Lagna for the chosen divisional chart
+    activeVargaLagna = calculateVargaLongitude(lagnaLongitude, factor);
 
-            if (currentChartStyle === "western") {
-                earthCenter.style.display = "block";
-                buildWesternWheel(lagnaLongitude);
-                highlightLagnaSign(lagnaLongitude);
-                renderWesternPlanets(currentLongitudes);
-            } else if (currentChartStyle === "south") {
-                earthCenter.style.display = "none";
-                buildSouthIndianChart(lagnaLongitude, currentLongitudes);
-            } else if (currentChartStyle === "north") {
-                earthCenter.style.display = "none";
-                buildNorthIndianChart(lagnaLongitude, currentLongitudes);
-            }
-        }
+    // Recalculate all planet positions for the chosen divisional chart
+    currentLongitudes = {};
+    Object.entries(rawPositions).forEach(([pName, long]) => {
+        currentLongitudes[pName] = calculateVargaLongitude(long, factor);
+    });
 
+    renderSelectedChartType();
+    
+    const vargaLagnaSign = ZODIAC_SIGNS[Math.floor(activeVargaLagna / 30)];
+    statusDisplay.innerText = `Viewing ${vargaCode} Chart (Varga Lagna: ${vargaLagnaSign})`;
+}
+
+function renderSelectedChartType() {
+    baseChartLayer.innerHTML = "";
+    houseLinesGroup.innerHTML = "";
+    planetTracksGroup.innerHTML = "";
+    planetsLayer.innerHTML = "";
+    pointerLinesLayer.innerHTML = "";
+    externalHudLayer.innerHTML = "";
+    aspectLinesLayer.innerHTML = "";
+    lagnaLayer.innerHTML = "";
+    planetPositionsMap = {};
+
+    // Use activeVargaLagna instead of static lagnaLongitude
+    let renderLagna = (activeVarga === "D1") ? lagnaLongitude : activeVargaLagna;
+
+    if (currentChartStyle === "western") {
+        earthCenter.style.display = "block";
+        buildWesternWheel(renderLagna);
+        highlightLagnaSign(renderLagna);
+        renderWesternPlanets(currentLongitudes);
+    } else if (currentChartStyle === "south") {
+        earthCenter.style.display = "none";
+        buildSouthIndianChart(renderLagna, currentLongitudes);
+    } else if (currentChartStyle === "north") {
+        earthCenter.style.display = "none";
+        buildNorthIndianChart(renderLagna, currentLongitudes);
+    }
+}
         // --- DIGNITY EVALUATION MATRIX ---
         function evaluateDignity(pName, long) {
             let signIdx = Math.floor((long % 360 + 360) % 360 / 30);
