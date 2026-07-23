@@ -142,7 +142,7 @@
 
             <!-- Divisional Varga Selector Dropdown -->
             <div class="flex justify-center items-center gap-2">
-                
+                <label for="varga-select" class="text-xs font-bold text-cyan-400 uppercase">Divisional Chart:</label>
                 <select id="varga-select" onchange="switchVargaChart(this.value)" class="bg-slate-950 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none">
                     <option value="D1">D1 - Rashi (Natal Chart)</option>
                     <option value="D2">D2 - Hora (Wealth & Family)</option>
@@ -275,27 +275,27 @@
         </div>
     </div>
 
-   <!-- VIMSHOTTARI DASHA TIMELINE SECTION (COMPACT DRILL-DOWN) -->
-<div id="dasha-container" class="hidden w-full max-w-2xl my-3 backdrop-blur-md bg-slate-950/70 p-3 rounded-2xl border-2 border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.15)] select-none">
-    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2 mb-2">
-        <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Vimshottari Dasha Engine (5-Level Hierarchy)</h2>
-        <span class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-2 py-0.5 rounded border border-cyan-500/30">M → A → P → S → Pr</span>
-    </div>
+    <!-- VIMSHOTTARI DASHA TIMELINE SECTION (COMPACT DRILL-DOWN) -->
+    <div id="dasha-container" class="hidden w-full max-w-2xl my-3 backdrop-blur-md bg-slate-950/70 p-3 rounded-2xl border-2 border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.15)] select-none">
+        <div class="flex items-center justify-between border-b border-amber-500/30 pb-2 mb-2">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Vimshottari Dasha Engine (5-Level Hierarchy)</h2>
+            <span class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-2 py-0.5 rounded border border-cyan-500/30">M → A → P → S → Pr</span>
+        </div>
 
-    <!-- Active Path Breadcrumb Bar -->
-    <div id="dasha-breadcrumbs" class="flex flex-wrap items-center gap-1.5 text-[11px] font-extrabold text-slate-200 mb-2 bg-slate-900/90 p-2 rounded-xl border border-slate-800">
-        <span class="text-slate-500">Selected Path:</span>
-        <span id="breadcrumb-content" class="text-cyan-300">Select Mahadasha below</span>
-    </div>
+        <!-- Active Path Breadcrumb Bar -->
+        <div id="dasha-breadcrumbs" class="flex flex-wrap items-center gap-1.5 text-[11px] font-extrabold text-slate-200 mb-2 bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+            <span class="text-slate-500">Selected Path:</span>
+            <span id="breadcrumb-content" class="text-cyan-300">Select Mahadasha below</span>
+        </div>
 
-    <!-- Dynamic Level Selector & Items Grid -->
-    <div id="dasha-interactive-view" class="space-y-2">
-        <div id="dasha-level-title" class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Select Mahadasha</div>
-        <div id="dasha-grid" class="grid grid-cols-3 sm:grid-cols-3 gap-1.5">
-            <!-- Populated dynamically with compact badges -->
+        <!-- Dynamic Level Selector & Items Grid -->
+        <div id="dasha-interactive-view" class="space-y-2">
+            <div id="dasha-level-title" class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Select Mahadasha</div>
+            <div id="dasha-grid" class="grid grid-cols-3 sm:grid-cols-3 gap-1.5">
+                <!-- Populated dynamically with compact badges -->
+            </div>
         </div>
     </div>
-</div>
 
     <script>
         const center = { x: 400, y: 400 };
@@ -376,7 +376,6 @@
         let currentLongitudes = {};
         let planetPositionsMap = {}; 
         let lagnaLongitude = 0;
-        let birthYear = 2000;
 
         function getZodiacCoordinateString(rawDegree) {
             let normDeg = (rawDegree % 360 + 360) % 360;
@@ -392,174 +391,148 @@
             return `${NAKSHATRAS[nakshatraIndex]}-${currentPada}`;
         }
 
-        // --- CHART FORMAT SWITCHER ---
+        // --- ACCURATE PARASHARI VARGA (DIVISIONAL) COMPUTATION ENGINE ---
+        function calculateVargaLongitude(long, vargaFactor) {
+            let norm = (long % 360 + 360) % 360;
+            let signIdx = Math.floor(norm / 30);
+            let degInSign = norm % 30;
+            let targetSignIdx = signIdx;
+
+            switch (vargaFactor) {
+                case 1: targetSignIdx = signIdx; break;
+                case 2:
+                    const isOddD2 = (signIdx % 2 === 0);
+                    targetSignIdx = (degInSign < 15) ? (isOddD2 ? 4 : 3) : (isOddD2 ? 3 : 4);
+                    break;
+                case 3:
+                    const partD3 = Math.floor(degInSign / 10);
+                    targetSignIdx = (signIdx + partD3 * 4) % 12;
+                    break;
+                case 4:
+                    const partD4 = Math.floor(degInSign / 7.5);
+                    targetSignIdx = (signIdx + partD4 * 3) % 12;
+                    break;
+                case 7:
+                    const partD7 = Math.floor(degInSign / (30 / 7));
+                    targetSignIdx = (signIdx % 2 === 0) ? (signIdx + partD7) % 12 : (signIdx + 6 + partD7) % 12;
+                    break;
+                case 9:
+                    const partD9 = Math.floor(degInSign / (30 / 9));
+                    let startD9 = [0, 4, 8].includes(signIdx) ? 0 : [1, 5, 9].includes(signIdx) ? 9 : [2, 6, 10].includes(signIdx) ? 6 : 3;
+                    targetSignIdx = (startD9 + partD9) % 12;
+                    break;
+                case 10:
+                    const partD10 = Math.floor(degInSign / 3);
+                    targetSignIdx = (signIdx % 2 === 0) ? (signIdx + partD10) % 12 : (signIdx + 8 + partD10) % 12;
+                    break;
+                case 12:
+                    const partD12 = Math.floor(degInSign / 2.5);
+                    targetSignIdx = (signIdx + partD12) % 12;
+                    break;
+                case 16:
+                    const partD16 = Math.floor(degInSign / (30 / 16));
+                    let startD16 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 4 : 8;
+                    targetSignIdx = (startD16 + partD16) % 12;
+                    break;
+                case 20:
+                    const partD20 = Math.floor(degInSign / 1.5);
+                    let startD20 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 8 : 4;
+                    targetSignIdx = (startD20 + partD20) % 12;
+                    break;
+                case 24:
+                    const partD24 = Math.floor(degInSign / 1.25);
+                    targetSignIdx = (signIdx % 2 === 0) ? (4 + partD24) % 12 : (3 + partD24) % 12;
+                    break;
+                case 27:
+                    const partD27 = Math.floor(degInSign / (30 / 27));
+                    let startD27 = [0, 4, 8].includes(signIdx) ? 0 : [1, 5, 9].includes(signIdx) ? 3 : [2, 6, 10].includes(signIdx) ? 6 : 9;
+                    targetSignIdx = (startD27 + partD27) % 12;
+                    break;
+                case 30:
+                    if (signIdx % 2 === 0) {
+                        targetSignIdx = degInSign < 5 ? 0 : degInSign < 10 ? 10 : degInSign < 18 ? 8 : degInSign < 25 ? 2 : 1;
+                    } else {
+                        targetSignIdx = degInSign < 5 ? 1 : degInSign < 10 ? 2 : degInSign < 18 ? 8 : degInSign < 25 ? 10 : 0;
+                    }
+                    break;
+                case 40:
+                    const partD40 = Math.floor(degInSign / 0.75);
+                    targetSignIdx = (signIdx % 2 === 0) ? (0 + partD40) % 12 : (6 + partD40) % 12;
+                    break;
+                case 45:
+                    const partD45 = Math.floor(degInSign / (30 / 45));
+                    let startD45 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 4 : 8;
+                    targetSignIdx = (startD45 + partD45) % 12;
+                    break;
+                case 60:
+                    const partD60 = Math.floor(degInSign / 0.5);
+                    targetSignIdx = (signIdx + partD60) % 12;
+                    break;
+                default:
+                    targetSignIdx = signIdx;
+            }
+
+            let segSize = 30 / vargaFactor;
+            let degreeFraction = (degInSign % segSize) / segSize;
+            return targetSignIdx * 30 + (degreeFraction * 30);
+        }
+
+        let activeVargaLagna = 0;
+
+        function switchVargaChart(vargaCode) {
+            activeVarga = vargaCode;
+            const factor = parseInt(vargaCode.replace('D', '')) || 1;
+
+            activeVargaLagna = calculateVargaLongitude(lagnaLongitude, factor);
+
+            currentLongitudes = {};
+            Object.entries(rawPositions).forEach(([pName, long]) => {
+                currentLongitudes[pName] = calculateVargaLongitude(long, factor);
+            });
+
+            renderSelectedChartType();
+            
+            const vargaLagnaSign = ZODIAC_SIGNS[Math.floor(activeVargaLagna / 30)];
+            statusDisplay.innerText = `Viewing ${vargaCode} Chart (Varga Lagna: ${vargaLagnaSign})`;
+        }
+
         function switchChartFormat(style) {
             currentChartStyle = style;
-
-            const activeBtnClass = "px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow";
-            const inactiveBtnClass = "px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white";
-
-            document.getElementById("btn-western").className = style === "western" ? activeBtnClass : inactiveBtnClass;
-            document.getElementById("btn-south").className = style === "south" ? activeBtnClass : inactiveBtnClass;
-            document.getElementById("btn-north").className = style === "north" ? activeBtnClass : inactiveBtnClass;
-
+            document.querySelectorAll('#chart-hud button[id^="btn-"]').forEach(btn => {
+                btn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white";
+            });
+            const activeBtn = document.getElementById(`btn-${style}`);
+            if (activeBtn) activeBtn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow";
             renderSelectedChartType();
         }
 
-       // --- ACCURATE PARASHARI VARGA (DIVISIONAL) COMPUTATION ENGINE ---
-function calculateVargaLongitude(long, vargaFactor) {
-    let norm = (long % 360 + 360) % 360;
-    let signIdx = Math.floor(norm / 30);
-    let degInSign = norm % 30;
-    let targetSignIdx = signIdx;
+        function renderSelectedChartType() {
+            baseChartLayer.innerHTML = "";
+            houseLinesGroup.innerHTML = "";
+            planetTracksGroup.innerHTML = "";
+            planetsLayer.innerHTML = "";
+            pointerLinesLayer.innerHTML = "";
+            externalHudLayer.innerHTML = "";
+            aspectLinesLayer.innerHTML = "";
+            lagnaLayer.innerHTML = "";
+            planetPositionsMap = {};
 
-    switch (vargaFactor) {
-        case 1: // D1 Rashi
-            targetSignIdx = signIdx;
-            break;
+            let renderLagna = (activeVarga === "D1") ? lagnaLongitude : activeVargaLagna;
 
-        case 2: // D2 Hora (Parashari: Sun/Moon rules)
-            const isOddD2 = (signIdx % 2 === 0);
-            targetSignIdx = (degInSign < 15) ? (isOddD2 ? 4 : 3) : (isOddD2 ? 3 : 4);
-            break;
-
-        case 3: // D3 Drekkana (1st, 5th, 9th signs)
-            const partD3 = Math.floor(degInSign / 10);
-            targetSignIdx = (signIdx + partD3 * 4) % 12;
-            break;
-
-        case 4: // D4 Chaturthamsa (1st, 4th, 7th, 10th signs)
-            const partD4 = Math.floor(degInSign / 7.5);
-            targetSignIdx = (signIdx + partD4 * 3) % 12;
-            break;
-
-        case 7: // D7 Saptamsa (Odd: Same sign, Even: 7th sign)
-            const partD7 = Math.floor(degInSign / (30 / 7));
-            targetSignIdx = (signIdx % 2 === 0) ? (signIdx + partD7) % 12 : (signIdx + 6 + partD7) % 12;
-            break;
-
-        case 9: // D9 Navamsa (Fire: Aries, Earth: Cap, Air: Lib, Water: Can)
-            const partD9 = Math.floor(degInSign / (30 / 9));
-            let startD9 = [0, 4, 8].includes(signIdx) ? 0 : [1, 5, 9].includes(signIdx) ? 9 : [2, 6, 10].includes(signIdx) ? 6 : 3;
-            targetSignIdx = (startD9 + partD9) % 12;
-            break;
-
-        case 10: // D10 Dasamsa (Odd: Same sign, Even: 9th sign)
-            const partD10 = Math.floor(degInSign / 3);
-            targetSignIdx = (signIdx % 2 === 0) ? (signIdx + partD10) % 12 : (signIdx + 8 + partD10) % 12;
-            break;
-
-        case 12: // D12 Dwadasamsa (Starts from same sign)
-            const partD12 = Math.floor(degInSign / 2.5);
-            targetSignIdx = (signIdx + partD12) % 12;
-            break;
-
-        case 16: // D16 Shodasamsa (Movable: Aries, Fixed: Leo, Dual: Sag)
-            const partD16 = Math.floor(degInSign / (30 / 16));
-            let startD16 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 4 : 8;
-            targetSignIdx = (startD16 + partD16) % 12;
-            break;
-
-        case 20: // D20 Vimsamsa (Movable: Aries, Fixed: Sag, Dual: Leo)
-            const partD20 = Math.floor(degInSign / 1.5);
-            let startD20 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 8 : 4;
-            targetSignIdx = (startD20 + partD20) % 12;
-            break;
-
-        case 24: // D24 Siddhamsa (Odd: Leo, Even: Cancer)
-            const partD24 = Math.floor(degInSign / 1.25);
-            targetSignIdx = (signIdx % 2 === 0) ? (4 + partD24) % 12 : (3 + partD24) % 12;
-            break;
-
-        case 27: // D27 Bhamsa (Fire: Aries, Earth: Cancer, Air: Lib, Water: Cap)
-            const partD27 = Math.floor(degInSign / (30 / 27));
-            let startD27 = [0, 4, 8].includes(signIdx) ? 0 : [1, 5, 9].includes(signIdx) ? 3 : [2, 6, 10].includes(signIdx) ? 6 : 9;
-            targetSignIdx = (startD27 + partD27) % 12;
-            break;
-
-        case 30: // D30 Trimsamsa (Elements rule)
-            if (signIdx % 2 === 0) { // Odd Sign
-                targetSignIdx = degInSign < 5 ? 0 : degInSign < 10 ? 10 : degInSign < 18 ? 8 : degInSign < 25 ? 2 : 1;
-            } else { // Even Sign
-                targetSignIdx = degInSign < 5 ? 1 : degInSign < 10 ? 2 : degInSign < 18 ? 8 : degInSign < 25 ? 10 : 0;
+            if (currentChartStyle === "western") {
+                earthCenter.style.display = "block";
+                buildWesternWheel(renderLagna);
+                highlightLagnaSign(renderLagna);
+                renderWesternPlanets(currentLongitudes);
+            } else if (currentChartStyle === "south") {
+                earthCenter.style.display = "none";
+                buildSouthIndianChart(renderLagna, currentLongitudes);
+            } else if (currentChartStyle === "north") {
+                earthCenter.style.display = "none";
+                buildNorthIndianChart(renderLagna, currentLongitudes);
             }
-            break;
+        }
 
-        case 40: // D40 Khavedamsa (Odd: Aries, Even: Libra)
-            const partD40 = Math.floor(degInSign / 0.75);
-            targetSignIdx = (signIdx % 2 === 0) ? (0 + partD40) % 12 : (6 + partD40) % 12;
-            break;
-
-        case 45: // D45 Akshavedamsa (Movable: Aries, Fixed: Leo, Dual: Sag)
-            const partD45 = Math.floor(degInSign / (30 / 45));
-            let startD45 = [0, 3, 6, 9].includes(signIdx) ? 0 : [1, 4, 7, 10].includes(signIdx) ? 4 : 8;
-            targetSignIdx = (startD45 + partD45) % 12;
-            break;
-
-        case 60: // D60 Shashtiamsa (Starts from same sign)
-            const partD60 = Math.floor(degInSign / 0.5);
-            targetSignIdx = (signIdx + partD60) % 12;
-            break;
-
-        default:
-            targetSignIdx = signIdx;
-    }
-
-    // Proportional intra-sign degree placement to prevent overlapping
-    let segSize = 30 / vargaFactor;
-    let degreeFraction = (degInSign % segSize) / segSize;
-    return targetSignIdx * 30 + (degreeFraction * 30);
-}
-
-// Global active Varga Lagna variable
-let activeVargaLagna = 0;
-
-function switchVargaChart(vargaCode) {
-    activeVarga = vargaCode;
-    const factor = parseInt(vargaCode.replace('D', '')) || 1;
-
-    // Recalculate Varga Lagna for the chosen divisional chart
-    activeVargaLagna = calculateVargaLongitude(lagnaLongitude, factor);
-
-    // Recalculate all planet positions for the chosen divisional chart
-    currentLongitudes = {};
-    Object.entries(rawPositions).forEach(([pName, long]) => {
-        currentLongitudes[pName] = calculateVargaLongitude(long, factor);
-    });
-
-    renderSelectedChartType();
-    
-    const vargaLagnaSign = ZODIAC_SIGNS[Math.floor(activeVargaLagna / 30)];
-    statusDisplay.innerText = `Viewing ${vargaCode} Chart (Varga Lagna: ${vargaLagnaSign})`;
-}
-
-function renderSelectedChartType() {
-    baseChartLayer.innerHTML = "";
-    houseLinesGroup.innerHTML = "";
-    planetTracksGroup.innerHTML = "";
-    planetsLayer.innerHTML = "";
-    pointerLinesLayer.innerHTML = "";
-    externalHudLayer.innerHTML = "";
-    aspectLinesLayer.innerHTML = "";
-    lagnaLayer.innerHTML = "";
-    planetPositionsMap = {};
-
-    // Use activeVargaLagna instead of static lagnaLongitude
-    let renderLagna = (activeVarga === "D1") ? lagnaLongitude : activeVargaLagna;
-
-    if (currentChartStyle === "western") {
-        earthCenter.style.display = "block";
-        buildWesternWheel(renderLagna);
-        highlightLagnaSign(renderLagna);
-        renderWesternPlanets(currentLongitudes);
-    } else if (currentChartStyle === "south") {
-        earthCenter.style.display = "none";
-        buildSouthIndianChart(renderLagna, currentLongitudes);
-    } else if (currentChartStyle === "north") {
-        earthCenter.style.display = "none";
-        buildNorthIndianChart(renderLagna, currentLongitudes);
-    }
-}
         // --- DIGNITY EVALUATION MATRIX ---
         function evaluateDignity(pName, long) {
             let signIdx = Math.floor((long % 360 + 360) % 360 / 30);
@@ -600,172 +573,166 @@ function renderSelectedChartType() {
             document.getElementById('dignity-container').classList.remove('hidden');
         }
 
-       // --- 5-LEVEL VIMSHOTTARI DASHA ENGINE (Mahadasha -> Antar -> Pratyantar -> Sookshma -> Prana) ---
-let dashaTreeData = [];
+        // --- ACCURATE 5-LEVEL VIMSHOTTARI DASHA ENGINE ---
+        let dashaTreeData = [];
+        const SOLAR_YEAR_MS = 365.242199 * 24 * 3600 * 1000;
 
-function renderVimshottariDasha(moonLong, bYear) {
-    let normDeg = (moonLong % 360 + 360) % 360;
-    const nakSpan = 360 / 27;
-    let nakIndex = Math.floor(normDeg / nakSpan);
-    let degInNak = normDeg % nakSpan;
+        function renderVimshottariDasha(moonLong, birthDateObj) {
+            let normDeg = (moonLong % 360 + 360) % 360;
+            const nakSpan = 360 / 27;
+            let nakIndex = Math.floor(normDeg / nakSpan);
+            let degInNak = normDeg % nakSpan;
 
-    let startLord = NAKSHATRA_LORDS[nakIndex];
-    let startIdx = DASHA_PERIODS.findIndex(p => p.lord === startLord);
+            let startLord = NAKSHATRA_LORDS[nakIndex];
+            let startIdx = DASHA_PERIODS.findIndex(p => p.lord === startLord);
 
-    let totalYears = DASHA_PERIODS[startIdx].years;
-    let fractionElapsed = degInNak / nakSpan;
-    let remainingYears = totalYears * (1 - fractionElapsed);
+            let totalYears = DASHA_PERIODS[startIdx].years;
+            let fractionElapsed = degInNak / nakSpan;
+            let remainingYears = totalYears * (1 - fractionElapsed);
 
-    let currentStart = new Date(bYear, 0, 1).getTime(); // Milliseconds precision
+            let currentStart = birthDateObj.getTime();
 
-    dashaTreeData = [];
+            dashaTreeData = [];
 
-    // Level 1: Mahadasha
-    for (let i = 0; i < 9; i++) {
-        let dIdx = (startIdx + i) % 9;
-        let periodObj = DASHA_PERIODS[dIdx];
-        let durationYears = (i === 0) ? remainingYears : periodObj.years;
-        let durationMs = durationYears * 365.25 * 24 * 3600 * 1000;
-        let currentEnd = currentStart + durationMs;
+            // Level 1: Mahadasha
+            for (let i = 0; i < 9; i++) {
+                let dIdx = (startIdx + i) % 9;
+                let periodObj = DASHA_PERIODS[dIdx];
+                let durationYears = (i === 0) ? remainingYears : periodObj.years;
+                let durationMs = durationYears * SOLAR_YEAR_MS;
+                let currentEnd = currentStart + durationMs;
 
-        let mNode = {
-            lord: periodObj.lord,
-            start: currentStart,
-            end: currentEnd,
-            sub: []
-        };
+                let mNode = { lord: periodObj.lord, start: currentStart, end: currentEnd, sub: [] };
 
-        // Level 2: Antardasha
-        let adStart = currentStart;
-        for (let j = 0; j < 9; j++) {
-            let adIdx = (dIdx + j) % 9;
-            let adYears = (periodObj.years * DASHA_PERIODS[adIdx].years) / 120;
-            let adMs = (i === 0 && j === 0) 
-                ? (durationYears / periodObj.years) * adYears * 365.25 * 24 * 3600 * 1000
-                : adYears * 365.25 * 24 * 3600 * 1000;
-            let adEnd = adStart + adMs;
+                // Level 2: Antardasha
+                let adStart = currentStart;
+                for (let j = 0; j < 9; j++) {
+                    let adIdx = (dIdx + j) % 9;
+                    let adYears = (periodObj.years * DASHA_PERIODS[adIdx].years) / 120;
+                    let adMs = (i === 0 && j === 0) 
+                        ? (durationYears / periodObj.years) * adYears * SOLAR_YEAR_MS
+                        : adYears * SOLAR_YEAR_MS;
+                    let adEnd = adStart + adMs;
 
-            let aNode = { lord: DASHA_PERIODS[adIdx].lord, start: adStart, end: adEnd, sub: [] };
+                    let aNode = { lord: DASHA_PERIODS[adIdx].lord, start: adStart, end: adEnd, sub: [] };
 
-            // Level 3: Pratyantardasha
-            let pdStart = adStart;
-            for (let k = 0; k < 9; k++) {
-                let pdIdx = (adIdx + k) % 9;
-                let pdMs = (adMs * DASHA_PERIODS[pdIdx].years) / 120;
-                let pdEnd = pdStart + pdMs;
+                    // Level 3: Pratyantardasha
+                    let pdStart = adStart;
+                    for (let k = 0; k < 9; k++) {
+                        let pdIdx = (adIdx + k) % 9;
+                        let pdMs = (adMs * DASHA_PERIODS[pdIdx].years) / 120;
+                        let pdEnd = pdStart + pdMs;
 
-                let pNode = { lord: DASHA_PERIODS[pdIdx].lord, start: pdStart, end: pdEnd, sub: [] };
+                        let pNode = { lord: DASHA_PERIODS[pdIdx].lord, start: pdStart, end: pdEnd, sub: [] };
 
-                // Level 4: Sookshmadasha
-                let sdStart = pdStart;
-                for (let l = 0; l < 9; l++) {
-                    let sdIdx = (pdIdx + l) % 9;
-                    let sdMs = (pdMs * DASHA_PERIODS[sdIdx].years) / 120;
-                    let sdEnd = sdStart + sdMs;
+                        // Level 4: Sookshmadasha
+                        let sdStart = pdStart;
+                        for (let l = 0; l < 9; l++) {
+                            let sdIdx = (pdIdx + l) % 9;
+                            let sdMs = (pdMs * DASHA_PERIODS[sdIdx].years) / 120;
+                            let sdEnd = sdStart + sdMs;
 
-                    let sNode = { lord: DASHA_PERIODS[sdIdx].lord, start: sdStart, end: sdEnd, sub: [] };
+                            let sNode = { lord: DASHA_PERIODS[sdIdx].lord, start: sdStart, end: sdEnd, sub: [] };
 
-                    // Level 5: Pranadasha
-                    let prStart = sdStart;
-                    for (let m = 0; m < 9; m++) {
-                        let prIdx = (sdIdx + m) % 9;
-                        let prMs = (sdMs * DASHA_PERIODS[prIdx].years) / 120;
-                        let prEnd = prStart + prMs;
+                            // Level 5: Pranadasha
+                            let prStart = sdStart;
+                            for (let m = 0; m < 9; m++) {
+                                let prIdx = (sdIdx + m) % 9;
+                                let prMs = (sdMs * DASHA_PERIODS[prIdx].years) / 120;
+                                let prEnd = prStart + prMs;
 
-                        sNode.sub.push({ lord: DASHA_PERIODS[prIdx].lord, start: prStart, end: prEnd });
-                        prStart = prEnd;
+                                sNode.sub.push({ lord: DASHA_PERIODS[prIdx].lord, start: prStart, end: prEnd });
+                                prStart = prEnd;
+                            }
+
+                            pNode.sub.push(sNode);
+                            sdStart = sdEnd;
+                        }
+
+                        aNode.sub.push(pNode);
+                        pdStart = pdEnd;
                     }
 
-                    pNode.sub.push(sNode);
-                    sdStart = sdEnd;
+                    mNode.sub.push(aNode);
+                    adStart = adEnd;
                 }
 
-                aNode.sub.push(pNode);
-                pdStart = pdEnd;
+                dashaTreeData.push(mNode);
+                currentStart = currentEnd;
             }
 
-            mNode.sub.push(aNode);
-            adStart = adEnd;
+            document.getElementById('dasha-container').classList.remove('hidden');
+            navigateDashaLevel([], "Mahadasha");
         }
 
-        dashaTreeData.push(mNode);
-        currentStart = currentEnd;
-    }
-
-    document.getElementById('dasha-container').classList.remove('hidden');
-    navigateDashaLevel([], "Mahadasha");
-}
-
-function formatDatePrecision(ms, level) {
-    let d = new Date(ms);
-    let year = d.getFullYear();
-    let month = String(d.getMonth() + 1).padStart(2, '0');
-    let day = String(d.getDate()).padStart(2, '0');
-    if (level >= 3) {
-        let hours = String(d.getHours()).padStart(2, '0');
-        let mins = String(d.getMinutes()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hours}:${mins}`;
-    }
-    return `${year}-${month}-${day}`;
-}
-
-function navigateDashaLevel(pathIndices = [], levelName = "Mahadasha") {
-    const grid = document.getElementById('dasha-grid');
-    const title = document.getElementById('dasha-level-title');
-    const breadcrumb = document.getElementById('breadcrumb-content');
-
-    grid.innerHTML = "";
-
-    // Resolve node path
-    let currentNodes = dashaTreeData;
-    let pathNames = [];
-
-    pathIndices.forEach((idx, level) => {
-        pathNames.push(currentNodes[idx].lord.toUpperCase());
-        currentNodes = currentNodes[idx].sub;
-    });
-
-    // Update Breadcrumbs
-    if (pathNames.length === 0) {
-        breadcrumb.innerHTML = `<span class="text-amber-300">Mahadasha List</span>`;
-    } else {
-        breadcrumb.innerHTML = pathNames.map((name, i) => 
-            `<button onclick="navigateDashaLevel([${pathIndices.slice(0, i + 1).join(',')}], '${['Antardasha','Pratyantardasha','Sookshmadasha','Pranadasha'][i]}')" class="hover:underline text-cyan-300 font-bold">${name}</button>`
-        ).join(' <span class="text-slate-600">›</span> ');
-    }
-
-    title.innerText = `Select ${levelName} ${pathIndices.length > 0 ? `for (${pathNames.join(' › ')})` : ''}`;
-
-    // Render items grid
-    currentNodes.forEach((node, i) => {
-        const btn = document.createElement('button');
-        btn.className = "bg-slate-900 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-xl text-left transition flex flex-col justify-between shadow-sm group";
-
-        const lordLabel = node.lord.substring(0, 3).toUpperCase();
-        const startStr = formatDatePrecision(node.start, pathIndices.length);
-        const endStr = formatDatePrecision(node.end, pathIndices.length);
-
-        btn.innerHTML = `
-            <div class="flex items-center justify-between w-full">
-                <span class="font-extrabold text-xs text-amber-300 group-hover:text-cyan-300 uppercase">${lordLabel}</span>
-                ${node.sub ? '<span class="text-[9px] text-slate-500 group-hover:text-cyan-400">›</span>' : ''}
-            </div>
-            <div class="text-[9.5px] font-mono text-slate-400 mt-1">
-                <div>${startStr}</div>
-                <div>${endStr}</div>
-            </div>
-        `;
-
-        if (node.sub && node.sub.length > 0) {
-            let nextLevelName = ["Antardasha", "Pratyantardasha", "Sookshmadasha", "Pranadasha"][pathIndices.length];
-            btn.onclick = () => navigateDashaLevel([...pathIndices, i], nextLevelName);
-        } else {
-            btn.classList.add("cursor-default", "border-emerald-500/40");
+        function formatDatePrecision(ms, level) {
+            let d = new Date(ms);
+            let year = d.getFullYear();
+            let month = String(d.getMonth() + 1).padStart(2, '0');
+            let day = String(d.getDate()).padStart(2, '0');
+            if (level >= 3) {
+                let hours = String(d.getHours()).padStart(2, '0');
+                let mins = String(d.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day} ${hours}:${mins}`;
+            }
+            return `${year}-${month}-${day}`;
         }
 
-        grid.appendChild(btn);
-    });
-}
+        function navigateDashaLevel(pathIndices = [], levelName = "Mahadasha") {
+            const grid = document.getElementById('dasha-grid');
+            const title = document.getElementById('dasha-level-title');
+            const breadcrumb = document.getElementById('breadcrumb-content');
+
+            grid.innerHTML = "";
+
+            let currentNodes = dashaTreeData;
+            let pathNames = [];
+
+            pathIndices.forEach((idx, level) => {
+                pathNames.push(currentNodes[idx].lord.toUpperCase());
+                currentNodes = currentNodes[idx].sub;
+            });
+
+            if (pathNames.length === 0) {
+                breadcrumb.innerHTML = `<span class="text-amber-300">Mahadasha List</span>`;
+            } else {
+                breadcrumb.innerHTML = pathNames.map((name, i) => 
+                    `<button onclick="navigateDashaLevel([${pathIndices.slice(0, i + 1).join(',')}], '${['Antardasha','Pratyantardasha','Sookshmadasha','Pranadasha'][i]}')" class="hover:underline text-cyan-300 font-bold">${name}</button>`
+                ).join(' <span class="text-slate-600">›</span> ');
+            }
+
+            title.innerText = `Select ${levelName} ${pathIndices.length > 0 ? `for (${pathNames.join(' › ')})` : ''}`;
+
+            currentNodes.forEach((node, i) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-slate-900 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-xl text-left transition flex flex-col justify-between shadow-sm group";
+
+                const lordLabel = node.lord.substring(0, 3).toUpperCase();
+                const startStr = formatDatePrecision(node.start, pathIndices.length);
+                const endStr = formatDatePrecision(node.end, pathIndices.length);
+
+                btn.innerHTML = `
+                    <div class="flex items-center justify-between w-full">
+                        <span class="font-extrabold text-xs text-amber-300 group-hover:text-cyan-300 uppercase">${lordLabel}</span>
+                        ${node.sub ? '<span class="text-[9px] text-slate-500 group-hover:text-cyan-400">›</span>' : ''}
+                    </div>
+                    <div class="text-[9.5px] font-mono text-slate-400 mt-1">
+                        <div>${startStr}</div>
+                        <div>${endStr}</div>
+                    </div>
+                `;
+
+                if (node.sub && node.sub.length > 0) {
+                    let nextLevelName = ["Antardasha", "Pratyantardasha", "Sookshmadasha", "Pranadasha"][pathIndices.length];
+                    btn.onclick = () => navigateDashaLevel([...pathIndices, i], nextLevelName);
+                } else {
+                    btn.classList.add("cursor-default", "border-emerald-500/40");
+                }
+
+                grid.appendChild(btn);
+            });
+        }
+
         // --- ASPECT LASER SYSTEM FOR ALL CHARTS ---
         function drawPlanetaryAspects(pName, sourceLong) {
             aspectLinesLayer.innerHTML = "";
@@ -1250,12 +1217,13 @@ function navigateDashaLevel(pathIndices = [], levelName = "Mahadasha") {
         document.getElementById('chart-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const dobVal = document.getElementById('dob').value;
-            birthYear = new Date(dobVal).getFullYear() || 2000;
+            const tobVal = document.getElementById('tob').value || "00:00";
+            const birthDateTime = new Date(`${dobVal}T${tobVal}:00`);
 
             const formData = new FormData();
             formData.append('name', document.getElementById('name').value);
             formData.append('dob', dobVal);
-            formData.append('tob', document.getElementById('tob').value);
+            formData.append('tob', tobVal);
             formData.append('city', document.getElementById('city').value);
             formData.append('tz_offset', document.getElementById('tz_offset').value);
 
@@ -1277,25 +1245,12 @@ function navigateDashaLevel(pathIndices = [], levelName = "Mahadasha") {
                 renderSelectedChartType();
                 populateDignityTable(rawPositions);
                 if (rawPositions["moon"]) {
-                    renderVimshottariDasha(rawPositions["moon"], birthYear);
+                    renderVimshottariDasha(rawPositions["moon"], birthDateTime);
                 }
             } else {
                 alert(data.message);
             }
         });
-        // Disable Right-Click Context Menu
-document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-// Disable Keyboard Shortcuts for Inspect & View Source
-document.addEventListener('keydown', (e) => {
-    if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-        (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.key === 'S' || e.key === 's'))
-    ) {
-        e.preventDefault();
-    }
-});
     </script>
 </body>
 </html>
