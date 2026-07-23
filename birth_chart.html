@@ -275,15 +275,27 @@
         </div>
     </div>
 
-    <!-- VIMSHOTTARI DASHA TIMELINE SECTION -->
-    <div id="dasha-container" class="hidden w-full max-w-2xl my-3 backdrop-blur-md bg-slate-950/70 p-4 rounded-2xl border-2 border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.15)] select-none">
-        <h2 class="text-sm font-extrabold uppercase tracking-wider text-amber-300 mb-1 text-center">Vimshottari Dasha Timeline (120-Year Cycle)</h2>
-        <p class="text-[11px] text-slate-400 text-center mb-3">Calculated from Natal Moon position & Nakshatra balance</p>
-        
-        <div id="dasha-timeline-tree" class="space-y-2">
-            <!-- Populated Dynamically -->
+   <!-- VIMSHOTTARI DASHA TIMELINE SECTION (COMPACT DRILL-DOWN) -->
+<div id="dasha-container" class="hidden w-full max-w-2xl my-3 backdrop-blur-md bg-slate-950/70 p-3 rounded-2xl border-2 border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.15)] select-none">
+    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2 mb-2">
+        <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Vimshottari Dasha Engine (5-Level Hierarchy)</h2>
+        <span class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-2 py-0.5 rounded border border-cyan-500/30">M → A → P → S → Pr</span>
+    </div>
+
+    <!-- Active Path Breadcrumb Bar -->
+    <div id="dasha-breadcrumbs" class="flex flex-wrap items-center gap-1.5 text-[11px] font-extrabold text-slate-200 mb-2 bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+        <span class="text-slate-500">Selected Path:</span>
+        <span id="breadcrumb-content" class="text-cyan-300">Select Mahadasha below</span>
+    </div>
+
+    <!-- Dynamic Level Selector & Items Grid -->
+    <div id="dasha-interactive-view" class="space-y-2">
+        <div id="dasha-level-title" class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Select Mahadasha</div>
+        <div id="dasha-grid" class="grid grid-cols-3 sm:grid-cols-3 gap-1.5">
+            <!-- Populated dynamically with compact badges -->
         </div>
     </div>
+</div>
 
     <script>
         const center = { x: 400, y: 400 };
@@ -588,70 +600,172 @@ function renderSelectedChartType() {
             document.getElementById('dignity-container').classList.remove('hidden');
         }
 
-        // --- VIMSHOTTARI DASHA GENERATOR ---
-        function renderVimshottariDasha(moonLong, bYear) {
-            const container = document.getElementById('dasha-timeline-tree');
-            container.innerHTML = "";
+       // --- 5-LEVEL VIMSHOTTARI DASHA ENGINE (Mahadasha -> Antar -> Pratyantar -> Sookshma -> Prana) ---
+let dashaTreeData = [];
 
-            let normDeg = (moonLong % 360 + 360) % 360;
-            const nakSpan = 360 / 27;
-            let nakIndex = Math.floor(normDeg / nakSpan);
-            let degInNak = normDeg % nakSpan;
+function renderVimshottariDasha(moonLong, bYear) {
+    let normDeg = (moonLong % 360 + 360) % 360;
+    const nakSpan = 360 / 27;
+    let nakIndex = Math.floor(normDeg / nakSpan);
+    let degInNak = normDeg % nakSpan;
 
-            let lordName = NAKSHATRA_LORDS[nakIndex];
-            let lordIdx = DASHA_PERIODS.findIndex(p => p.lord === lordName);
+    let startLord = NAKSHATRA_LORDS[nakIndex];
+    let startIdx = DASHA_PERIODS.findIndex(p => p.lord === startLord);
 
-            let totalYears = DASHA_PERIODS[lordIdx].years;
-            let fractionElapsed = degInNak / nakSpan;
-            let remainingYears = totalYears * (1 - fractionElapsed);
+    let totalYears = DASHA_PERIODS[startIdx].years;
+    let fractionElapsed = degInNak / nakSpan;
+    let remainingYears = totalYears * (1 - fractionElapsed);
 
-            let currentStart = bYear;
+    let currentStart = new Date(bYear, 0, 1).getTime(); // Milliseconds precision
 
-            for (let i = 0; i < 9; i++) {
-                let dIdx = (lordIdx + i) % 9;
-                let periodObj = DASHA_PERIODS[dIdx];
-                let duration = (i === 0) ? remainingYears : periodObj.years;
-                let currentEnd = currentStart + duration;
+    dashaTreeData = [];
 
-                const card = document.createElement('div');
-                card.className = "bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-xs flex flex-col justify-between";
+    // Level 1: Mahadasha
+    for (let i = 0; i < 9; i++) {
+        let dIdx = (startIdx + i) % 9;
+        let periodObj = DASHA_PERIODS[dIdx];
+        let durationYears = (i === 0) ? remainingYears : periodObj.years;
+        let durationMs = durationYears * 365.25 * 24 * 3600 * 1000;
+        let currentEnd = currentStart + durationMs;
 
-                const mainLine = document.createElement('div');
-                mainLine.className = "flex justify-between items-center";
-                mainLine.innerHTML = `
-                    <span class="font-extrabold uppercase text-cyan-300">${periodObj.lord} Mahadasha (${periodObj.years} Yrs)</span>
-                    <span class="font-bold text-slate-300">${Math.floor(currentStart)} — ${Math.floor(currentEnd)}</span>
-                `;
-                card.appendChild(mainLine);
+        let mNode = {
+            lord: periodObj.lord,
+            start: currentStart,
+            end: currentEnd,
+            sub: []
+        };
 
-                // Add Antardasha Accordion Summary
-                const subLine = document.createElement('div');
-                subLine.className = "text-[10px] text-slate-400 mt-1 flex flex-wrap gap-1.5 border-t border-slate-800/80 pt-1.5";
-                
-                let adStart = currentStart;
-                for (let j = 0; j < 9; j++) {
-                    let adIdx = (dIdx + j) % 9;
-                    let adLord = DASHA_PERIODS[adIdx].lord;
-                    let adYears = (periodObj.years * DASHA_PERIODS[adIdx].years) / 120;
-                    let adEnd = adStart + adYears;
+        // Level 2: Antardasha
+        let adStart = currentStart;
+        for (let j = 0; j < 9; j++) {
+            let adIdx = (dIdx + j) % 9;
+            let adYears = (periodObj.years * DASHA_PERIODS[adIdx].years) / 120;
+            let adMs = (i === 0 && j === 0) 
+                ? (durationYears / periodObj.years) * adYears * 365.25 * 24 * 3600 * 1000
+                : adYears * 365.25 * 24 * 3600 * 1000;
+            let adEnd = adStart + adMs;
 
-                    const adBadge = document.createElement('span');
-                    adBadge.className = "px-1.5 py-0.5 bg-slate-950 rounded text-slate-300 font-mono";
-                    adBadge.innerText = `${adLord.substring(0,3)}: ${Math.floor(adStart)}-${Math.floor(adEnd)}`;
-                    subLine.appendChild(adBadge);
+            let aNode = { lord: DASHA_PERIODS[adIdx].lord, start: adStart, end: adEnd, sub: [] };
 
-                    adStart = adEnd;
+            // Level 3: Pratyantardasha
+            let pdStart = adStart;
+            for (let k = 0; k < 9; k++) {
+                let pdIdx = (adIdx + k) % 9;
+                let pdMs = (adMs * DASHA_PERIODS[pdIdx].years) / 120;
+                let pdEnd = pdStart + pdMs;
+
+                let pNode = { lord: DASHA_PERIODS[pdIdx].lord, start: pdStart, end: pdEnd, sub: [] };
+
+                // Level 4: Sookshmadasha
+                let sdStart = pdStart;
+                for (let l = 0; l < 9; l++) {
+                    let sdIdx = (pdIdx + l) % 9;
+                    let sdMs = (pdMs * DASHA_PERIODS[sdIdx].years) / 120;
+                    let sdEnd = sdStart + sdMs;
+
+                    let sNode = { lord: DASHA_PERIODS[sdIdx].lord, start: sdStart, end: sdEnd, sub: [] };
+
+                    // Level 5: Pranadasha
+                    let prStart = sdStart;
+                    for (let m = 0; m < 9; m++) {
+                        let prIdx = (sdIdx + m) % 9;
+                        let prMs = (sdMs * DASHA_PERIODS[prIdx].years) / 120;
+                        let prEnd = prStart + prMs;
+
+                        sNode.sub.push({ lord: DASHA_PERIODS[prIdx].lord, start: prStart, end: prEnd });
+                        prStart = prEnd;
+                    }
+
+                    pNode.sub.push(sNode);
+                    sdStart = sdEnd;
                 }
-                
-                card.appendChild(subLine);
-                container.appendChild(card);
 
-                currentStart = currentEnd;
+                aNode.sub.push(pNode);
+                pdStart = pdEnd;
             }
 
-            document.getElementById('dasha-container').classList.remove('hidden');
+            mNode.sub.push(aNode);
+            adStart = adEnd;
         }
 
+        dashaTreeData.push(mNode);
+        currentStart = currentEnd;
+    }
+
+    document.getElementById('dasha-container').classList.remove('hidden');
+    navigateDashaLevel([], "Mahadasha");
+}
+
+function formatDatePrecision(ms, level) {
+    let d = new Date(ms);
+    let year = d.getFullYear();
+    let month = String(d.getMonth() + 1).padStart(2, '0');
+    let day = String(d.getDate()).padStart(2, '0');
+    if (level >= 3) {
+        let hours = String(d.getHours()).padStart(2, '0');
+        let mins = String(d.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${mins}`;
+    }
+    return `${year}-${month}-${day}`;
+}
+
+function navigateDashaLevel(pathIndices = [], levelName = "Mahadasha") {
+    const grid = document.getElementById('dasha-grid');
+    const title = document.getElementById('dasha-level-title');
+    const breadcrumb = document.getElementById('breadcrumb-content');
+
+    grid.innerHTML = "";
+
+    // Resolve node path
+    let currentNodes = dashaTreeData;
+    let pathNames = [];
+
+    pathIndices.forEach((idx, level) => {
+        pathNames.push(currentNodes[idx].lord.toUpperCase());
+        currentNodes = currentNodes[idx].sub;
+    });
+
+    // Update Breadcrumbs
+    if (pathNames.length === 0) {
+        breadcrumb.innerHTML = `<span class="text-amber-300">Mahadasha List</span>`;
+    } else {
+        breadcrumb.innerHTML = pathNames.map((name, i) => 
+            `<button onclick="navigateDashaLevel([${pathIndices.slice(0, i + 1).join(',')}], '${['Antardasha','Pratyantardasha','Sookshmadasha','Pranadasha'][i]}')" class="hover:underline text-cyan-300 font-bold">${name}</button>`
+        ).join(' <span class="text-slate-600">›</span> ');
+    }
+
+    title.innerText = `Select ${levelName} ${pathIndices.length > 0 ? `for (${pathNames.join(' › ')})` : ''}`;
+
+    // Render items grid
+    currentNodes.forEach((node, i) => {
+        const btn = document.createElement('button');
+        btn.className = "bg-slate-900 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-xl text-left transition flex flex-col justify-between shadow-sm group";
+
+        const lordLabel = node.lord.substring(0, 3).toUpperCase();
+        const startStr = formatDatePrecision(node.start, pathIndices.length);
+        const endStr = formatDatePrecision(node.end, pathIndices.length);
+
+        btn.innerHTML = `
+            <div class="flex items-center justify-between w-full">
+                <span class="font-extrabold text-xs text-amber-300 group-hover:text-cyan-300 uppercase">${lordLabel}</span>
+                ${node.sub ? '<span class="text-[9px] text-slate-500 group-hover:text-cyan-400">›</span>' : ''}
+            </div>
+            <div class="text-[9.5px] font-mono text-slate-400 mt-1">
+                <div>${startStr}</div>
+                <div>${endStr}</div>
+            </div>
+        `;
+
+        if (node.sub && node.sub.length > 0) {
+            let nextLevelName = ["Antardasha", "Pratyantardasha", "Sookshmadasha", "Pranadasha"][pathIndices.length];
+            btn.onclick = () => navigateDashaLevel([...pathIndices, i], nextLevelName);
+        } else {
+            btn.classList.add("cursor-default", "border-emerald-500/40");
+        }
+
+        grid.appendChild(btn);
+    });
+}
         // --- ASPECT LASER SYSTEM FOR ALL CHARTS ---
         function drawPlanetaryAspects(pName, sourceLong) {
             aspectLinesLayer.innerHTML = "";
