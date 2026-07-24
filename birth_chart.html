@@ -333,35 +333,28 @@
         let activeVarga = "D1"; // Active Varga Chart
         let showAshtakavarga = false; // Ashtakavarga visibility toggle
 
-        // Mock Ashtakavarga Scores (SAV points 0-48 per sign index 0..11)
-        const sampleAVPoints = [30, 28, 32, 24, 19, 27, 31, 22, 29, 35, 26, 34];
+        // Replace static sampleAVPoints with dynamic state:
+let currentSAVPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-        function toggleAshtakavarga(enabled) {
-            showAshtakavarga = enabled;
-            renderSelectedChartType();
-        }
+// In buildWesternWheel(ascDegree):
+drawAVBadge(avX, avY, currentSAVPoints[i]);
 
-        function drawAVBadge(x, y, points) {
-            if (!showAshtakavarga) return;
-            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            g.setAttribute("class", "av-badge");
-            g.setAttribute("transform", `translate(${x}, ${y})`);
+// In buildSouthIndianChart(ascDegree, positions):
+drawAVBadge(x + box - 20, y + box - 16, currentSAVPoints[item.s]);
 
-            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            rect.setAttribute("x", "-13");
-            rect.setAttribute("y", "-8");
-            rect.setAttribute("width", "26");
-            rect.setAttribute("height", "16");
+// In buildNorthIndianChart(ascDegree, positions):
+drawAVBadge(item.x, item.y + 35, currentSAVPoints[signIdx]);
 
-            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            text.setAttribute("x", "0");
-            text.setAttribute("y", "1");
-            text.textContent = points;
-
-            g.appendChild(rect);
-            g.appendChild(text);
-            ashtakavargaLayer.appendChild(g);
-        }
+// In Form Submit Handler:
+if (data.status === 'success') {
+    // ...
+    rawPositions = data.positions;
+    if (data.sav) {
+        currentSAVPoints = data.sav;
+    }
+    // ...
+    renderSelectedChartType();
+}
 
         function adaptViewportDimensions() {
             if (window.innerWidth > 768) {
