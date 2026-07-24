@@ -170,10 +170,20 @@
             </select>
         </div>
 
-        <!-- Ashtakavarga Toggle Control -->
+        <!-- Ashtakavarga Toggle & Mode Controls -->
         <div class="flex items-center justify-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80">
             <input type="checkbox" id="toggleAV" onchange="toggleAshtakavarga(this.checked)" class="w-4 h-4 accent-cyan-400 cursor-pointer">
             <label for="toggleAV" class="text-xs font-bold text-cyan-400 uppercase cursor-pointer select-none whitespace-nowrap">Show Ashtakavarga</label>
+            <select id="av-mode-select" onchange="switchAVMode(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer">
+                <option value="SAV">SAV (Total)</option>
+                <option value="sun">BAV - Sun</option>
+                <option value="moon">BAV - Moon</option>
+                <option value="mars">BAV - Mars</option>
+                <option value="mercury">BAV - Mercury</option>
+                <option value="jupiter">BAV - Jupiter</option>
+                <option value="venus">BAV - Venus</option>
+                <option value="saturn">BAV - Saturn</option>
+            </select>
         </div>
 
     </div>
@@ -332,13 +342,138 @@
         let currentChartStyle = "western"; // "western", "south", or "north"
         let activeVarga = "D1"; // Active Varga Chart
         let showAshtakavarga = false; // Ashtakavarga visibility toggle
+        let activeAVMode = "SAV"; // "SAV" or specific planet name e.g. "sun", "moon"
 
-        // Mock Ashtakavarga Scores (SAV points 0-48 per sign index 0..11)
-        const sampleAVPoints = [30, 28, 32, 24, 19, 27, 31, 22, 29, 35, 26, 34];
+        // Computed Ashtakavarga Stores (0-11 sign indices)
+        let computedBAV = {};
+        let computedSAV = [0,0,0,0,0,0,0,0,0,0,0,0];
+
+        // --- PARASHARI ASHTAKAVARGA ENGINE ---
+        const AV_RULES = {
+            sun: {
+                sun: [1, 2, 4, 7, 8, 9, 10, 11],
+                moon: [3, 6, 10, 11],
+                mars: [1, 2, 4, 7, 8, 9, 10, 11],
+                mercury: [1, 3, 5, 6, 9, 10, 11, 12],
+                jupiter: [5, 6, 9, 11],
+                venus: [6, 7, 12],
+                saturn: [1, 2, 4, 7, 8, 9, 10, 11],
+                lagna: [3, 4, 6, 10, 11, 12]
+            },
+            moon: {
+                sun: [3, 6, 7, 8, 10, 11],
+                moon: [1, 3, 6, 7, 10, 11],
+                mars: [2, 3, 5, 6, 9, 10, 11],
+                mercury: [1, 3, 4, 5, 7, 8, 10, 11],
+                jupiter: [1, 4, 7, 8, 10, 11, 12],
+                venus: [3, 4, 5, 7, 9, 10, 11],
+                saturn: [3, 5, 6, 11],
+                lagna: [3, 6, 10, 11]
+            },
+            mars: {
+                sun: [3, 5, 6, 10, 11],
+                moon: [3, 6, 11],
+                mars: [1, 2, 4, 7, 8, 10, 11],
+                mercury: [3, 5, 6, 11],
+                jupiter: [6, 10, 11, 12],
+                venus: [6, 8, 11, 12],
+                saturn: [1, 4, 7, 8, 9, 10, 11],
+                lagna: [1, 3, 6, 10, 11]
+            },
+            mercury: {
+                sun: [5, 6, 9, 11, 12],
+                moon: [2, 4, 6, 8, 10, 11],
+                mars: [1, 2, 4, 7, 8, 9, 10, 11],
+                mercury: [1, 3, 5, 6, 9, 10, 11, 12],
+                jupiter: [6, 8, 11, 12],
+                venus: [1, 2, 3, 4, 5, 8, 9, 11],
+                saturn: [1, 2, 4, 7, 8, 9, 10, 11],
+                lagna: [1, 2, 4, 6, 8, 10, 11]
+            },
+            jupiter: {
+                sun: [1, 2, 3, 4, 7, 8, 9, 10, 11],
+                moon: [2, 5, 7, 9, 11],
+                mars: [1, 2, 4, 7, 8, 10, 11],
+                mercury: [1, 2, 4, 5, 6, 9, 10, 11],
+                jupiter: [1, 2, 3, 4, 7, 8, 10, 11],
+                venus: [2, 5, 6, 9, 10, 11],
+                saturn: [3, 5, 6, 12],
+                lagna: [1, 2, 4, 5, 6, 7, 9, 10, 11]
+            },
+            venus: {
+                sun: [8, 11, 12],
+                moon: [1, 2, 3, 4, 5, 8, 9, 11, 12],
+                mars: [3, 4, 6, 9, 11, 12],
+                mercury: [3, 5, 6, 9, 11],
+                jupiter: [5, 8, 9, 10, 11],
+                venus: [1, 2, 3, 4, 5, 8, 9, 10, 11],
+                saturn: [3, 4, 5, 8, 9, 10, 11],
+                lagna: [1, 2, 3, 4, 5, 8, 9, 11]
+            },
+            saturn: {
+                sun: [1, 2, 4, 7, 8, 10, 11],
+                moon: [3, 6, 11],
+                mars: [3, 5, 6, 10, 11, 12],
+                mercury: [6, 8, 9, 10, 11, 12],
+                jupiter: [5, 6, 11, 12],
+                venus: [6, 11, 12],
+                saturn: [3, 5, 6, 11],
+                lagna: [1, 3, 4, 6, 10, 11]
+            }
+        };
+
+        function calculateAshtakavarga(positions, lagnaDeg) {
+            const planetKeys = ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn"];
+            const signIndices = {};
+
+            planetKeys.forEach(p => {
+                if (positions[p] !== undefined) {
+                    signIndices[p] = Math.floor((positions[p] % 360 + 360) % 360 / 30);
+                }
+            });
+            signIndices["lagna"] = Math.floor((lagnaDeg % 360 + 360) % 360 / 30);
+
+            computedBAV = {};
+            computedSAV = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+            planetKeys.forEach(targetP => {
+                computedBAV[targetP] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                const ruleset = AV_RULES[targetP];
+                if (!ruleset) return;
+
+                Object.keys(ruleset).forEach(sourceKey => {
+                    const sourceSign = signIndices[sourceKey];
+                    if (sourceSign !== undefined) {
+                        const offsets = ruleset[sourceKey];
+                        offsets.forEach(off => {
+                            const targetSign = (sourceSign + off - 1) % 12;
+                            computedBAV[targetP][targetSign]++;
+                        });
+                    }
+                });
+
+                for (let i = 0; i < 12; i++) {
+                    computedSAV[i] += computedBAV[targetP][i];
+                }
+            });
+        }
 
         function toggleAshtakavarga(enabled) {
             showAshtakavarga = enabled;
             renderSelectedChartType();
+        }
+
+        function switchAVMode(mode) {
+            activeAVMode = mode;
+            if (showAshtakavarga) {
+                renderSelectedChartType();
+            }
+        }
+
+        function getActiveAVPoints() {
+            if (activeAVMode === "SAV") return computedSAV;
+            if (computedBAV[activeAVMode]) return computedBAV[activeAVMode];
+            return computedSAV;
         }
 
         function drawAVBadge(x, y, points) {
@@ -537,6 +672,7 @@
                 currentLongitudes[pName] = calculateVargaLongitude(long, factor);
             });
 
+            calculateAshtakavarga(currentLongitudes, activeVargaLagna);
             renderSelectedChartType();
             
             const vargaLagnaSign = ZODIAC_SIGNS[Math.floor(activeVargaLagna / 30)];
@@ -915,6 +1051,7 @@
             baseChartLayer.appendChild(circleInner);
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
+            const activeAV = getActiveAVPoints();
 
             for (let i = 0; i < 12; i++) {
                 const angleRad = (i * 30 - 90) * (Math.PI / 180);
@@ -949,7 +1086,7 @@
                 const avRadius = 90;
                 const avX = center.x + Math.cos(textAngle) * avRadius;
                 const avY = center.y + Math.sin(textAngle) * avRadius;
-                drawAVBadge(avX, avY, sampleAVPoints[i]);
+                drawAVBadge(avX, avY, activeAV[i]);
             }
 
             Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
@@ -1104,6 +1241,7 @@
             ];
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
+            const activeAV = getActiveAVPoints();
 
             gridCoords.forEach(item => {
                 const x = left + item.col * box; const y = top + item.row * box;
@@ -1146,7 +1284,7 @@
                 baseChartLayer.appendChild(outerNumText);
 
                 // Ashtakavarga Badge (Bottom-Right Corner)
-                drawAVBadge(x + box - 20, y + box - 16, sampleAVPoints[item.s]);
+                drawAVBadge(x + box - 20, y + box - 16, activeAV[item.s]);
             });
 
             const signPlanets = {};
@@ -1221,6 +1359,7 @@
             ];
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
+            const activeAV = getActiveAVPoints();
             const housePlanets = {};
             for (let i = 1; i <= 12; i++) housePlanets[i] = [];
 
@@ -1241,7 +1380,7 @@
                 baseChartLayer.appendChild(signText);
 
                 // Ashtakavarga Badge
-                drawAVBadge(item.x, item.y + 35, sampleAVPoints[signIdx]);
+                drawAVBadge(item.x, item.y + 35, activeAV[signIdx]);
 
                 const pList = housePlanets[item.h];
                 pList.forEach((pObj, pIdx) => {
@@ -1305,6 +1444,7 @@
                 document.getElementById('chart-owner-name').innerText = `${data.name}'s Janam Kundali`;
                 document.getElementById('chart-meta-info').innerText = `${data.dob} | ${data.tob} | Lagna: ${getZodiacCoordinateString(lagnaLongitude)}`;
 
+                calculateAshtakavarga(currentLongitudes, lagnaLongitude);
                 renderSelectedChartType();
                 populateDignityTable(rawPositions);
                 if (rawPositions["moon"]) {
