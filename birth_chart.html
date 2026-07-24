@@ -136,19 +136,20 @@
         <div class="text-[10px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
         <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
         
-        <!-- Controls Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 my-1 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+        <!-- Dynamically Adjustable Controls Container -->
+        <div class="flex flex-wrap items-center justify-center gap-3 my-1 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+            
             <!-- Format Selector Buttons -->
-            <div class="flex justify-center items-center gap-1">
-                <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow">Western Wheel</button>
-                <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white">South Indian</button>
-                <button type="button" onclick="switchChartFormat('north')" id="btn-north" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white">North Indian</button>
+            <div class="flex-1 min-w-[220px] flex justify-center items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80">
+                <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow transition">Western Wheel</button>
+                <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition">South Indian</button>
+                <button type="button" onclick="switchChartFormat('north')" id="btn-north" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition">North Indian</button>
             </div>
 
             <!-- Divisional Varga Selector Dropdown -->
-            <div class="flex justify-center items-center gap-2">
-                <label for="varga-select" class="text-xs font-bold text-cyan-400 uppercase">Divisional Chart:</label>
-                <select id="varga-select" onchange="switchVargaChart(this.value)" class="bg-slate-950 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none">
+            <div class="flex-1 min-w-[220px] flex justify-center items-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80">
+                <label for="varga-select" class="text-xs font-bold text-cyan-400 uppercase whitespace-nowrap">Divisional Chart:</label>
+                <select id="varga-select" onchange="switchVargaChart(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer">
                     <option value="D1">D1 - Rashi (Natal Chart)</option>
                     <option value="D2">D2 - Hora (Wealth & Family)</option>
                     <option value="D3">D3 - Drekkana (Siblings & Courage)</option>
@@ -169,10 +170,13 @@
             </div>
 
             <!-- Ashtakavarga Toggle Control -->
-            <div class="flex justify-center items-center gap-2">
+            <div class="flex-1 min-w-[180px] flex justify-center items-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80">
                 <input type="checkbox" id="toggleAV" onchange="toggleAshtakavarga(this.checked)" class="w-4 h-4 accent-cyan-400 cursor-pointer">
-                <label for="toggleAV" class="text-xs font-bold text-cyan-400 uppercase cursor-pointer select-none">Show Ashtakavarga</label>
+                <label for="toggleAV" class="text-xs font-bold text-cyan-400 uppercase cursor-pointer select-none whitespace-nowrap">Show Ashtakavarga</label>
             </div>
+
+            <!-- Future option groups will cleanly wrap here automatically -->
+
         </div>
 
         <div id="status-display" class="text-xs font-black tracking-wide neon-text-amber mt-1">Tap any planet to inspect aspects</div>
@@ -543,10 +547,10 @@
         function switchChartFormat(style) {
             currentChartStyle = style;
             document.querySelectorAll('#chart-hud button[id^="btn-"]').forEach(btn => {
-                btn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white";
+                btn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition";
             });
             const activeBtn = document.getElementById(`btn-${style}`);
-            if (activeBtn) activeBtn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow";
+            if (activeBtn) activeBtn.className = "px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow transition";
             renderSelectedChartType();
         }
 
