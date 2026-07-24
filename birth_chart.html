@@ -6,7 +6,7 @@
     <title>Vedic Birth Chart Generator - Janam Kundali</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=500;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght=500;700;800&family=Noto+Sans+Telugu:wght=500;700;800&family=Noto+Sans+Devanagari:wght=500;700;800&display=swap');
         
         html, body {
             margin: 0; padding: 0;
@@ -17,7 +17,7 @@
         }
 
         body {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Space Grotesk', 'Noto Sans Telugu', 'Noto Sans Devanagari', sans-serif;
             background: radial-gradient(circle at center, #0c152b 0%, #050814 60%, #010206 100%);
             display: flex; flex-direction: column;
             align-items: center; justify-content: flex-start;
@@ -75,7 +75,7 @@
         .neon-text-amber { color: #fffdeb; text-shadow: 0 0 4px #fbbf24, 0 0 10px #fbbf24; }
         .neon-text-emerald { color: #ecfdf5; text-shadow: 0 0 4px #34d399, 0 0 10px #10b981; }
 
-        .hud-text { font-size: 12px; font-weight: 800; fill: #ffffff; font-family: 'Space Grotesk', sans-serif; }
+        .hud-text { font-size: 12px; font-weight: 800; fill: #ffffff; font-family: inherit; }
         @media (max-width: 768px) { .hud-text { font-size: 14px; } }
         .aspect-laser { opacity: 0.95; stroke-width: 3; stroke-linecap: round; pointer-events: none; }
 
@@ -87,109 +87,116 @@
 </head>
 <body class="text-slate-100 p-2">
 
-    <!-- Header -->
+    <!-- Header & Language Selector -->
     <div class="w-full max-w-2xl my-1 flex justify-between items-center select-none">
         <a href="/" class="text-xs font-bold text-cyan-400 hover:underline">← Home Hub</a>
-        <span class="text-xs text-slate-400 font-bold uppercase tracking-widest">Natal Janam Kundali Workstation</span>
+        <div class="flex items-center gap-2">
+            <label for="lang-select" class="text-xs font-bold text-slate-300">🌐 Language / భాష / भाषा:</label>
+            <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer">
+                <option value="en" selected>English</option>
+                <option value="te">తెలుగు (Telugu)</option>
+                <option value="hi">हिंदी (Hindi)</option>
+            </select>
+        </div>
     </div>
 
     <!-- Input Form -->
     <div id="form-container" class="backdrop-blur-md bg-slate-950/70 p-5 rounded-3xl border-2 border-cyan-400/40 w-full max-w-xl my-2 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-        <h1 class="text-xl font-extrabold text-cyan-200 mb-1">Generate Natal Birth Chart</h1>
-        <p class="text-xs text-slate-400 mb-3">Enter birth details to compute your exact Lahiri Kundali wheel.</p>
+        <h1 id="lbl-form-title" class="text-xl font-extrabold text-cyan-200 mb-1">Generate Natal Birth Chart</h1>
+        <p id="lbl-form-desc" class="text-xs text-slate-400 mb-3">Enter birth details to compute your exact Lahiri Kundali wheel.</p>
 
         <form id="chart-form" class="space-y-3">
             <div>
-                <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Full Name</label>
+                <label id="lbl-full-name" class="block text-xs font-bold uppercase text-slate-300 mb-1">Full Name</label>
                 <input type="text" id="name" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-cyan-400 focus:outline-none">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Date of Birth</label>
+                    <label id="lbl-dob" class="block text-xs font-bold uppercase text-slate-300 mb-1">Date of Birth</label>
                     <input type="date" id="dob" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-cyan-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Time of Birth</label>
+                    <label id="lbl-tob" class="block text-xs font-bold uppercase text-slate-300 mb-1">Time of Birth</label>
                     <input type="time" id="tob" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-cyan-400 focus:outline-none">
                 </div>
             </div>
 
             <div class="grid grid-cols-3 gap-3">
                 <div class="col-span-2">
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Birth Place (City)</label>
+                    <label id="lbl-city" class="block text-xs font-bold uppercase text-slate-300 mb-1">Birth Place (City)</label>
                     <input type="text" id="city" placeholder="e.g. Tanuku, Visakhapatnam" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-cyan-400 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-300 mb-1">Timezone Offset</label>
+                    <label id="lbl-tz" class="block text-xs font-bold uppercase text-slate-300 mb-1">Timezone Offset</label>
                     <input type="number" step="0.5" id="tz_offset" value="5.5" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-cyan-400 focus:outline-none">
                 </div>
             </div>
 
-            <button type="submit" class="w-full mt-2 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl transition duration-200 shadow-lg">
+            <button type="submit" id="btn-submit" class="w-full mt-2 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl transition duration-200 shadow-lg">
                 Plot Natal Wheel
             </button>
         </form>
     </div>
 
     <!-- HUD Dashboard -->
-<div id="chart-hud" class="hidden backdrop-blur-md bg-slate-950/50 p-2.5 sm:p-3 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.25)] border-2 border-cyan-400/40 w-full max-w-2xl mb-2 text-center z-10 select-none box-border mx-auto">
-    <div class="text-[10px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
-    <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
-    
-    <!-- Dynamically Adjustable Controls Container -->
-    <div class="flex flex-wrap items-center justify-center gap-2 my-1 bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800 max-w-full overflow-hidden">
+    <div id="chart-hud" class="hidden backdrop-blur-md bg-slate-950/50 p-2.5 sm:p-3 rounded-2xl shadow-[0_0_40px_rgba(6,182,212,0.25)] border-2 border-cyan-400/40 w-full max-w-2xl mb-2 text-center z-10 select-none box-border mx-auto">
+        <div class="text-[10px] uppercase tracking-widest font-black mb-0.5 neon-text-emerald" id="chart-owner-name">Celestial Epoch Horizon</div>
+        <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
         
-        <!-- Format Selector Buttons -->
-        <div class="flex items-center justify-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80 max-w-full overflow-x-auto">
-            <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow transition whitespace-nowrap">Western Wheel</button>
-            <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition whitespace-nowrap">South Indian</button>
-            <button type="button" onclick="switchChartFormat('north')" id="btn-north" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition whitespace-nowrap">North Indian</button>
+        <!-- Controls Container -->
+        <div class="flex flex-wrap items-center justify-center gap-2 my-1 bg-slate-900/80 p-2 sm:p-2.5 rounded-xl border border-slate-800 max-w-full overflow-hidden">
+            
+            <!-- Chart Style Selector Buttons -->
+            <div class="flex items-center justify-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80 max-w-full overflow-x-auto">
+                <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow transition whitespace-nowrap">Western Wheel</button>
+                <button type="button" onclick="switchChartFormat('south')" id="btn-south" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition whitespace-nowrap">South Indian</button>
+                <button type="button" onclick="switchChartFormat('north')" id="btn-north" class="px-2.5 py-1 rounded-lg text-xs font-extrabold text-slate-400 hover:text-white transition whitespace-nowrap">North Indian</button>
+            </div>
+
+            <!-- Divisional Varga Selector Dropdown -->
+            <div class="flex items-center justify-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80 max-w-full">
+                <label for="varga-select" id="lbl-divisional" class="text-xs font-bold text-cyan-400 uppercase whitespace-nowrap">Divisional Chart:</label>
+                <select id="varga-select" onchange="switchVargaChart(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer max-w-[150px] sm:max-w-none">
+                    <option value="D1">D1 - Rashi (Natal Chart)</option>
+                    <option value="D2">D2 - Hora (Wealth & Family)</option>
+                    <option value="D3">D3 - Drekkana (Siblings & Courage)</option>
+                    <option value="D4">D4 - Chaturthamsa (Property & Home)</option>
+                    <option value="D7">D7 - Saptamsa (Children & Legacy)</option>
+                    <option value="D9">D9 - Navamsa (Marriage & Fortune)</option>
+                    <option value="D10">D10 - Dasamsa (Career & Status)</option>
+                    <option value="D12">D12 - Dwadasamsa (Parents & Lineage)</option>
+                    <option value="D16">D16 - Shodasamsa (Vehicles & Comforts)</option>
+                    <option value="D20">D20 - Vimsamsa (Spiritual Pursuits)</option>
+                    <option value="D24">D24 - Chaturvimsamsa (Learning & Education)</option>
+                    <option value="D27">D27 - Bhamsa (Strengths & Weaknesses)</option>
+                    <option value="D30">D30 - Trimsamsa (Evils & Obstacles)</option>
+                    <option value="D40">D40 - Khavedamsa (Auspicious Matters)</option>
+                    <option value="D45">D45 - Akshavedamsa (General Conduct)</option>
+                    <option value="D60">D60 - Shashtiamsa (Past Life Karma)</option>
+                </select>
+            </div>
+
+            <!-- Ashtakavarga Toggle & Mode Controls -->
+            <div class="flex items-center justify-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80">
+                <input type="checkbox" id="toggleAV" onchange="toggleAshtakavarga(this.checked)" class="w-4 h-4 accent-cyan-400 cursor-pointer">
+                <label for="toggleAV" id="lbl-toggle-av" class="text-xs font-bold text-cyan-400 uppercase cursor-pointer select-none whitespace-nowrap">Show Ashtakavarga</label>
+                <select id="av-mode-select" onchange="switchAVMode(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer">
+                    <option value="SAV">SAV (Total)</option>
+                    <option value="sun">BAV - Sun</option>
+                    <option value="moon">BAV - Moon</option>
+                    <option value="mars">BAV - Mars</option>
+                    <option value="mercury">BAV - Mercury</option>
+                    <option value="jupiter">BAV - Jupiter</option>
+                    <option value="venus">BAV - Venus</option>
+                    <option value="saturn">BAV - Saturn</option>
+                </select>
+            </div>
+
         </div>
 
-        <!-- Divisional Varga Selector Dropdown -->
-        <div class="flex items-center justify-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80 max-w-full">
-            <label for="varga-select" class="text-xs font-bold text-cyan-400 uppercase whitespace-nowrap">Divisional Chart:</label>
-            <select id="varga-select" onchange="switchVargaChart(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer max-w-[150px] sm:max-w-none">
-                <option value="D1">D1 - Rashi (Natal Chart)</option>
-                <option value="D2">D2 - Hora (Wealth & Family)</option>
-                <option value="D3">D3 - Drekkana (Siblings & Courage)</option>
-                <option value="D4">D4 - Chaturthamsa (Property & Home)</option>
-                <option value="D7">D7 - Saptamsa (Children & Legacy)</option>
-                <option value="D9">D9 - Navamsa (Marriage & Fortune)</option>
-                <option value="D10">D10 - Dasamsa (Career & Status)</option>
-                <option value="D12">D12 - Dwadasamsa (Parents & Lineage)</option>
-                <option value="D16">D16 - Shodasamsa (Vehicles & Comforts)</option>
-                <option value="D20">D20 - Vimsamsa (Spiritual Pursuits)</option>
-                <option value="D24">D24 - Chaturvimsamsa (Learning & Education)</option>
-                <option value="D27">D27 - Bhamsa (Strengths & Weaknesses)</option>
-                <option value="D30">D30 - Trimsamsa (Evils & Obstacles)</option>
-                <option value="D40">D40 - Khavedamsa (Auspicious Matters)</option>
-                <option value="D45">D45 - Akshavedamsa (General Conduct)</option>
-                <option value="D60">D60 - Shashtiamsa (Past Life Karma)</option>
-            </select>
-        </div>
-
-        <!-- Ashtakavarga Toggle & Mode Controls -->
-        <div class="flex items-center justify-center gap-2 bg-slate-950/60 p-1 rounded-lg border border-slate-800/80">
-            <input type="checkbox" id="toggleAV" onchange="toggleAshtakavarga(this.checked)" class="w-4 h-4 accent-cyan-400 cursor-pointer">
-            <label for="toggleAV" class="text-xs font-bold text-cyan-400 uppercase cursor-pointer select-none whitespace-nowrap">Show Ashtakavarga</label>
-            <select id="av-mode-select" onchange="switchAVMode(this.value)" class="bg-slate-900 border border-cyan-500/50 text-cyan-200 text-xs font-bold rounded-lg px-2 py-1 focus:outline-none cursor-pointer">
-                <option value="SAV">SAV (Total)</option>
-                <option value="sun">BAV - Sun</option>
-                <option value="moon">BAV - Moon</option>
-                <option value="mars">BAV - Mars</option>
-                <option value="mercury">BAV - Mercury</option>
-                <option value="jupiter">BAV - Jupiter</option>
-                <option value="venus">BAV - Venus</option>
-                <option value="saturn">BAV - Saturn</option>
-            </select>
-        </div>
-
+        <div id="status-display" class="text-xs font-black tracking-wide neon-text-amber mt-1">Tap any planet to inspect aspects</div>
     </div>
-
-    <div id="status-display" class="text-xs font-black tracking-wide neon-text-amber mt-1">Tap any planet to inspect aspects</div>
-</div>
 
     <!-- Chart SVG Viewport Container -->
     <div id="wheel-container" class="hidden chart-viewport-container">
@@ -282,15 +289,15 @@
 
     <!-- DIGNITY STATUS TABLE SECTION -->
     <div id="dignity-container" class="hidden w-full max-w-2xl my-3 backdrop-blur-md bg-slate-950/70 p-4 rounded-2xl border-2 border-cyan-400/40 shadow-[0_0_20px_rgba(6,182,212,0.15)] select-none">
-        <h2 class="text-sm font-extrabold uppercase tracking-wider text-cyan-300 mb-3 text-center border-b border-cyan-500/30 pb-2">Planetary Dignity Status Matrix</h2>
+        <h2 id="lbl-dignity-title" class="text-sm font-extrabold uppercase tracking-wider text-cyan-300 mb-3 text-center border-b border-cyan-500/30 pb-2">Planetary Dignity Status Matrix</h2>
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs font-semibold">
                 <thead class="text-[10px] text-slate-400 uppercase bg-slate-900 border-b border-slate-800">
                     <tr>
-                        <th class="p-2">Graha (Planet)</th>
-                        <th class="p-2">Placement</th>
-                        <th class="p-2">Nakshatra</th>
-                        <th class="p-2 text-center">Dignity Status</th>
+                        <th id="th-graha" class="p-2">Graha (Planet)</th>
+                        <th id="th-placement" class="p-2">Placement</th>
+                        <th id="th-nakshatra" class="p-2">Nakshatra</th>
+                        <th id="th-dignity" class="p-2 text-center">Dignity Status</th>
                     </tr>
                 </thead>
                 <tbody id="dignity-tbody" class="divide-y divide-slate-800 text-slate-200">
@@ -300,16 +307,16 @@
         </div>
     </div>
 
-    <!-- VIMSHOTTARI DASHA TIMELINE SECTION (COMPACT DRILL-DOWN) -->
+    <!-- VIMSHOTTARI DASHA TIMELINE SECTION -->
     <div id="dasha-container" class="hidden w-full max-w-2xl my-3 backdrop-blur-md bg-slate-950/70 p-3 rounded-2xl border-2 border-amber-400/40 shadow-[0_0_20px_rgba(245,158,11,0.15)] select-none">
         <div class="flex items-center justify-between border-b border-amber-500/30 pb-2 mb-2">
-            <h2 class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Vimshottari Dasha Engine (5-Level Hierarchy)</h2>
+            <h2 id="lbl-dasha-title" class="text-xs font-extrabold uppercase tracking-wider text-amber-300">Vimshottari Dasha Engine (5-Level Hierarchy)</h2>
             <span class="text-[10px] font-mono text-cyan-400 bg-slate-900 px-2 py-0.5 rounded border border-cyan-500/30">M → A → P → S → Pr</span>
         </div>
 
         <!-- Active Path Breadcrumb Bar -->
         <div id="dasha-breadcrumbs" class="flex flex-wrap items-center gap-1.5 text-[11px] font-extrabold text-slate-200 mb-2 bg-slate-900/90 p-2 rounded-xl border border-slate-800">
-            <span class="text-slate-500">Selected Path:</span>
+            <span id="lbl-path-prefix" class="text-slate-500">Selected Path:</span>
             <span id="breadcrumb-content" class="text-cyan-300">Select Mahadasha below</span>
         </div>
 
@@ -323,6 +330,149 @@
     </div>
 
     <script>
+        // --- MULTILINGUAL TRANSLATION DICTIONARIES ---
+        let currentLang = "en";
+
+        const TRANSLATIONS = {
+            en: {
+                formTitle: "Generate Natal Birth Chart",
+                formDesc: "Enter birth details to compute your exact Lahiri Kundali wheel.",
+                fullName: "Full Name",
+                dob: "Date of Birth",
+                tob: "Time of Birth",
+                city: "Birth Place (City)",
+                tz: "Timezone Offset",
+                submitBtn: "Plot Natal Wheel",
+                westernBtn: "Western Wheel",
+                southBtn: "South Indian",
+                northBtn: "North Indian",
+                divisionalLbl: "Divisional Chart:",
+                showAV: "Show Ashtakavarga",
+                statusDefault: "Tap any planet to inspect aspects",
+                dignityTitle: "Planetary Dignity Status Matrix",
+                thGraha: "Graha (Planet)",
+                thPlacement: "Placement",
+                thNakshatra: "Nakshatra",
+                thDignity: "Dignity Status",
+                dashaTitle: "Vimshottari Dasha Engine (5-Level Hierarchy)",
+                selectedPath: "Selected Path:",
+                selectMahadasha: "Select Mahadasha",
+                exalted: "Exalted (Ucca)",
+                debilitated: "Debilitated (Nica)",
+                ownSign: "Own Sign (Svaksetra)",
+                neutral: "Neutral (Sama)",
+                zodiac: ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"],
+                planets: {
+                    sun: "SUN", moon: "MOON", mars: "MARS", mercury: "MERC",
+                    jupiter: "JUP", venus: "VENUS", saturn: "SAT", rahu: "RAHU", ketu: "KETU"
+                }
+            },
+            te: {
+                formTitle: "జన్మ కుండలి చక్రం తయారు చేయండి",
+                formDesc: "ఖచ్చితమైన లహిరి పద్ధతి కుండలి కొరకు వివరాలు నమోదు చేయండి.",
+                fullName: "పూర్తి పేరు",
+                dob: "జన్మ తేదీ",
+                tob: "జన్మ సమయం",
+                city: "జన్మ స్థలం (నగరం)",
+                tz: "టైమ్‌జోన్ ఆఫ్‌సెట్",
+                submitBtn: "కుండలి చక్రం వేయండి",
+                westernBtn: "పాశ్చాత్య చక్రం",
+                southBtn: "దక్షిణ భారత చక్రం",
+                northBtn: "ఉత్తర భారత చక్రం",
+                divisionalLbl: "వర్గ చక్రం:",
+                showAV: "అష్టకవర్గ చూపించు",
+                statusDefault: "దృష్టి ప్రభావాలను చూడటానికి ఏ గ్రహాన్నైనా నొక్కండి",
+                dignityTitle: "గ్రహ స్థితి మరియు బలాబలాల పట్టిక",
+                thGraha: "గ్రహం",
+                thPlacement: "రాశి స్థానం",
+                thNakshatra: "నక్షత్రం",
+                thDignity: "గ్రహ స్థితి",
+                dashaTitle: "వింశోత్తరి దశా చక్రం (5 దశల విశ్లేషణ)",
+                selectedPath: "ఎంచుకున్న మార్గం:",
+                selectMahadasha: "మహాదశను ఎంచుకోండి",
+                exalted: "ఉచ్ఛ స్థానం",
+                debilitated: "నీచ స్థానం",
+                ownSign: "స్వక్షేత్రం",
+                neutral: "సమ స్థానం",
+                zodiac: ["మేషం", "వృషభం", "మిథునం", "కర్కాటకం", "సింహం", "కన్య", "తులా", "వృశ్చికం", "ధనుస్సు", "మకరం", "కుంభం", "మీనం"],
+                planets: {
+                    sun: "రవి", moon: "చంద్ర", mars: "కుజ", mercury: "బుధ",
+                    jupiter: "గురు", venus: "శుక్ర", saturn: "శని", rahu: "రాహు", ketu: "కేతు"
+                }
+            },
+            hi: {
+                formTitle: "जन्म कुंडली चक्र बनाएं",
+                formDesc: "सटीक लहिरी पद्धति कुंडली के लिए अपना विवरण दर्ज करें।",
+                fullName: "पूरा नाम",
+                dob: "जन्म तिथि",
+                tob: "जन्म समय",
+                city: "जन्म स्थान (शहर)",
+                tz: "टाइमज़ोन ऑफ़सेट",
+                submitBtn: "कुंडली चक्र बनाएं",
+                westernBtn: "वेस्टर्न व्हील",
+                southBtn: "दक्षिण भारतीय",
+                northBtn: "उत्तर भारतीय",
+                divisionalLbl: "वर्ग चार्ट:",
+                showAV: "अष्टकवर्ग दिखाएं",
+                statusDefault: "दृष्टि प्रभाव देखने के लिए किसी भी ग्रह पर टैप करें",
+                dignityTitle: "ग्रह स्थिति और बल तालिका",
+                thGraha: "ग्रह",
+                thPlacement: "राशि स्थिति",
+                thNakshatra: "नक्षत्र",
+                thDignity: "ग्रह की स्थिति",
+                dashaTitle: "विंशोत्तरी दशा इंजन (5-स्तरीय विश्लेषण)",
+                selectedPath: "चयनित मार्ग:",
+                selectMahadasha: "महादशा चुनें",
+                exalted: "उच्च (उच्च)",
+                debilitated: "नीच (नीच)",
+                ownSign: "स्वक्षेत्र",
+                neutral: "सम (सम)",
+                zodiac: ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"],
+                planets: {
+                    sun: "सूर्य", moon: "चंद्र", mars: "मंगल", mercury: "बुध",
+                    jupiter: "गुरु", venus: "शुक्र", saturn: "शनि", rahu: "राहु", ketu: "केतु"
+                }
+            }
+        };
+
+        function changeLanguage(langKey) {
+            currentLang = langKey;
+            const t = TRANSLATIONS[langKey];
+
+            // Static Form & Controls Updating
+            document.getElementById('lbl-form-title').innerText = t.formTitle;
+            document.getElementById('lbl-form-desc').innerText = t.formDesc;
+            document.getElementById('lbl-full-name').innerText = t.fullName;
+            document.getElementById('lbl-dob').innerText = t.dob;
+            document.getElementById('lbl-tob').innerText = t.tob;
+            document.getElementById('lbl-city').innerText = t.city;
+            document.getElementById('lbl-tz').innerText = t.tz;
+            document.getElementById('btn-submit').innerText = t.submitBtn;
+
+            document.getElementById('btn-western').innerText = t.westernBtn;
+            document.getElementById('btn-south').innerText = t.southBtn;
+            document.getElementById('btn-north').innerText = t.northBtn;
+            document.getElementById('lbl-divisional').innerText = t.divisionalLbl;
+            document.getElementById('lbl-toggle-av').innerText = t.showAV;
+            document.getElementById('status-display').innerText = t.statusDefault;
+
+            document.getElementById('lbl-dignity-title').innerText = t.dignityTitle;
+            document.getElementById('th-graha').innerText = t.thGraha;
+            document.getElementById('th-placement').innerText = t.thPlacement;
+            document.getElementById('th-nakshatra').innerText = t.thNakshatra;
+            document.getElementById('th-dignity').innerText = t.thDignity;
+
+            document.getElementById('lbl-dasha-title').innerText = t.dashaTitle;
+            document.getElementById('lbl-path-prefix').innerText = t.selectedPath;
+
+            // Re-render Active Chart & Tables with Updated Language Labels
+            if (Object.keys(currentLongitudes).length > 0) {
+                renderSelectedChartType();
+                populateDignityTable(rawPositions);
+                navigateDashaLevel([], "Mahadasha");
+            }
+        }
+
         const center = { x: 400, y: 400 };
         const statusDisplay = document.getElementById('status-display');
         const baseChartLayer = document.getElementById('base-chart-layer');
@@ -339,87 +489,23 @@
 
         let viewMatrix = { xMin: -30, yMin: 0, width: 860, height: 800 };
         let dynamicLabelRadius = 285;
-        let currentChartStyle = "western"; // "western", "south", or "north"
-        let activeVarga = "D1"; // Active Varga Chart
-        let showAshtakavarga = false; // Ashtakavarga visibility toggle
-        let activeAVMode = "SAV"; // "SAV" or specific planet name e.g. "sun", "moon"
+        let currentChartStyle = "western";
+        let activeVarga = "D1";
+        let showAshtakavarga = false;
+        let activeAVMode = "SAV";
 
-        // Computed Ashtakavarga Stores (0-11 sign indices)
         let computedBAV = {};
         let computedSAV = [0,0,0,0,0,0,0,0,0,0,0,0];
 
         // --- PARASHARI ASHTAKAVARGA ENGINE ---
         const AV_RULES = {
-            sun: {
-                sun: [1, 2, 4, 7, 8, 9, 10, 11],
-                moon: [3, 6, 10, 11],
-                mars: [1, 2, 4, 7, 8, 9, 10, 11],
-                mercury: [1, 3, 5, 6, 9, 10, 11, 12],
-                jupiter: [5, 6, 9, 11],
-                venus: [6, 7, 12],
-                saturn: [1, 2, 4, 7, 8, 9, 10, 11],
-                lagna: [3, 4, 6, 10, 11, 12]
-            },
-            moon: {
-                sun: [3, 6, 7, 8, 10, 11],
-                moon: [1, 3, 6, 7, 10, 11],
-                mars: [2, 3, 5, 6, 9, 10, 11],
-                mercury: [1, 3, 4, 5, 7, 8, 10, 11],
-                jupiter: [1, 4, 7, 8, 10, 11, 12],
-                venus: [3, 4, 5, 7, 9, 10, 11],
-                saturn: [3, 5, 6, 11],
-                lagna: [3, 6, 10, 11]
-            },
-            mars: {
-                sun: [3, 5, 6, 10, 11],
-                moon: [3, 6, 11],
-                mars: [1, 2, 4, 7, 8, 10, 11],
-                mercury: [3, 5, 6, 11],
-                jupiter: [6, 10, 11, 12],
-                venus: [6, 8, 11, 12],
-                saturn: [1, 4, 7, 8, 9, 10, 11],
-                lagna: [1, 3, 6, 10, 11]
-            },
-            mercury: {
-                sun: [5, 6, 9, 11, 12],
-                moon: [2, 4, 6, 8, 10, 11],
-                mars: [1, 2, 4, 7, 8, 9, 10, 11],
-                mercury: [1, 3, 5, 6, 9, 10, 11, 12],
-                jupiter: [6, 8, 11, 12],
-                venus: [1, 2, 3, 4, 5, 8, 9, 11],
-                saturn: [1, 2, 4, 7, 8, 9, 10, 11],
-                lagna: [1, 2, 4, 6, 8, 10, 11]
-            },
-            jupiter: {
-                sun: [1, 2, 3, 4, 7, 8, 9, 10, 11],
-                moon: [2, 5, 7, 9, 11],
-                mars: [1, 2, 4, 7, 8, 10, 11],
-                mercury: [1, 2, 4, 5, 6, 9, 10, 11],
-                jupiter: [1, 2, 3, 4, 7, 8, 10, 11],
-                venus: [2, 5, 6, 9, 10, 11],
-                saturn: [3, 5, 6, 12],
-                lagna: [1, 2, 4, 5, 6, 7, 9, 10, 11]
-            },
-            venus: {
-                sun: [8, 11, 12],
-                moon: [1, 2, 3, 4, 5, 8, 9, 11, 12],
-                mars: [3, 4, 6, 9, 11, 12],
-                mercury: [3, 5, 6, 9, 11],
-                jupiter: [5, 8, 9, 10, 11],
-                venus: [1, 2, 3, 4, 5, 8, 9, 10, 11],
-                saturn: [3, 4, 5, 8, 9, 10, 11],
-                lagna: [1, 2, 3, 4, 5, 8, 9, 11]
-            },
-            saturn: {
-                sun: [1, 2, 4, 7, 8, 10, 11],
-                moon: [3, 6, 11],
-                mars: [3, 5, 6, 10, 11, 12],
-                mercury: [6, 8, 9, 10, 11, 12],
-                jupiter: [5, 6, 11, 12],
-                venus: [6, 11, 12],
-                saturn: [3, 5, 6, 11],
-                lagna: [1, 3, 4, 6, 10, 11]
-            }
+            sun: { sun: [1,2,4,7,8,9,10,11], moon: [3,6,10,11], mars: [1,2,4,7,8,9,10,11], mercury: [1,3,5,6,9,10,11,12], jupiter: [5,6,9,11], venus: [6,7,12], saturn: [1,2,4,7,8,9,10,11], lagna: [3,4,6,10,11,12] },
+            moon: { sun: [3,6,7,8,10,11], moon: [1,3,6,7,10,11], mars: [2,3,5,6,9,10,11], mercury: [1,3,4,5,7,8,10,11], jupiter: [1,4,7,8,10,11,12], venus: [3,4,5,7,9,10,11], saturn: [3,5,6,11], lagna: [3,6,10,11] },
+            mars: { sun: [3,5,6,10,11], moon: [3,6,11], mars: [1,2,4,7,8,10,11], mercury: [3,5,6,11], jupiter: [6,10,11,12], venus: [6,8,11,12], saturn: [1,4,7,8,9,10,11], lagna: [1,3,6,10,11] },
+            mercury: { sun: [5,6,9,11,12], moon: [2,4,6,8,10,11], mars: [1,2,4,7,8,9,10,11], mercury: [1,3,5,6,9,10,11,12], jupiter: [6,8,11,12], venus: [1,2,3,4,5,8,9,11], saturn: [1,2,4,7,8,9,10,11], lagna: [1,2,4,6,8,10,11] },
+            jupiter: { sun: [1,2,3,4,7,8,9,10,11], moon: [2,5,7,9,11], mars: [1,2,4,7,8,10,11], mercury: [1,2,4,5,6,9,10,11], jupiter: [1,2,3,4,7,8,10,11], venus: [2,5,6,9,10,11], saturn: [3,5,6,12], lagna: [1,2,4,5,6,7,9,10,11] },
+            venus: { sun: [8,11,12], moon: [1,2,3,4,5,8,9,11,12], mars: [3,4,6,9,11,12], mercury: [3,5,6,9,11], jupiter: [5,8,9,10,11], venus: [1,2,3,4,5,8,9,10,11], saturn: [3,4,5,8,9,10,11], lagna: [1,2,3,4,5,8,9,11] },
+            saturn: { sun: [1,2,4,7,8,10,11], moon: [3,6,11], mars: [3,5,6,10,11,12], mercury: [6,8,9,10,11,12], jupiter: [5,6,11,12], venus: [6,11,12], saturn: [3,5,6,11], lagna: [1,3,4,6,10,11] }
         };
 
         function calculateAshtakavarga(positions, lagnaDeg) {
@@ -483,18 +569,14 @@
             g.setAttribute("transform", `translate(${x}, ${y})`);
 
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            rect.setAttribute("x", "-13");
-            rect.setAttribute("y", "-8");
-            rect.setAttribute("width", "26");
-            rect.setAttribute("height", "16");
+            rect.setAttribute("x", "-13"); rect.setAttribute("y", "-8");
+            rect.setAttribute("width", "26"); rect.setAttribute("height", "16");
 
             const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            text.setAttribute("x", "0");
-            text.setAttribute("y", "1");
+            text.setAttribute("x", "0"); text.setAttribute("y", "1");
             text.textContent = points;
 
-            g.appendChild(rect);
-            g.appendChild(text);
+            g.appendChild(rect); g.appendChild(text);
             ashtakavargaLayer.appendChild(g);
         }
 
@@ -517,7 +599,6 @@
         window.addEventListener('resize', adaptViewportDimensions);
         setTimeout(adaptViewportDimensions, 50);
 
-        const ZODIAC_SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
         const NAKSHATRAS = [
             "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha",
             "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
@@ -537,15 +618,15 @@
         ];
 
         const PLANET_CONFIGS = {
-            "moon":    { label: "MOON", grad: "url(#grad-moon)", radius: 85, size: 10, type: "moon", color: "#e2e8f0" },
-            "mercury": { label: "MERC", grad: "url(#grad-mercury)", radius: 103, size: 9, type: "sphere", color: "#ff7c43" },
-            "venus":   { label: "VENUS", grad: "url(#grad-venus)", radius: 121, size: 11, type: "sphere", color: "#fef9c3" },
-            "sun":     { label: "SUN", grad: null, radius: 139, size: 16, type: "sun", color: "#ffffff" },
-            "mars":    { label: "MARS", grad: "url(#grad-mars)", radius: 157, size: 10, type: "sphere", color: "#ef4444" },
-            "jupiter": { label: "JUP", grad: "url(#grad-jupiter)", radius: 175, size: 19, type: "jupiter", color: "#fbbf24" },
-            "saturn":  { label: "SAT", grad: "url(#grad-saturn)", radius: 195, size: 16, type: "saturn", color: "#c084fc" },
-            "rahu":    { label: "RAHU", grad: null, radius: 215, size: 24, type: "dragon-head", color: "#f43f5e" },
-            "ketu":    { label: "KETU", grad: null, radius: 233, size: 24, type: "dragon-tail", color: "#34d399" }
+            "moon":    { labelKey: "moon", grad: "url(#grad-moon)", radius: 85, size: 10, type: "moon", color: "#e2e8f0" },
+            "mercury": { labelKey: "mercury", grad: "url(#grad-mercury)", radius: 103, size: 9, type: "sphere", color: "#ff7c43" },
+            "venus":   { labelKey: "venus", grad: "url(#grad-venus)", radius: 121, size: 11, type: "sphere", color: "#fef9c3" },
+            "sun":     { labelKey: "sun", grad: null, radius: 139, size: 16, type: "sun", color: "#ffffff" },
+            "mars":    { labelKey: "mars", grad: "url(#grad-mars)", radius: 157, size: 10, type: "sphere", color: "#ef4444" },
+            "jupiter": { labelKey: "jupiter", grad: "url(#grad-jupiter)", radius: 175, size: 19, type: "jupiter", color: "#fbbf24" },
+            "saturn":  { labelKey: "saturn", grad: "url(#grad-saturn)", radius: 195, size: 16, type: "saturn", color: "#c084fc" },
+            "rahu":    { labelKey: "rahu", grad: null, radius: 215, size: 24, type: "dragon-head", color: "#f43f5e" },
+            "ketu":    { labelKey: "ketu", grad: null, radius: 233, size: 24, type: "dragon-tail", color: "#34d399" }
         };
 
         const PLANET_ASPECTS = {
@@ -561,7 +642,8 @@
 
         function getZodiacCoordinateString(rawDegree) {
             let normDeg = (rawDegree % 360 + 360) % 360;
-            return `${ZODIAC_SIGNS[Math.floor(normDeg / 30)]} ${Math.floor(normDeg % 30)}°`;
+            const signList = TRANSLATIONS[currentLang].zodiac;
+            return `${signList[Math.floor(normDeg / 30)]} ${Math.floor(normDeg % 30)}°`;
         }
 
         function getNakshatraPadaString(rawDegree) {
@@ -573,7 +655,6 @@
             return `${NAKSHATRAS[nakshatraIndex]}-${currentPada}`;
         }
 
-        // --- ACCURATE PARASHARI VARGA (DIVISIONAL) COMPUTATION ENGINE ---
         function calculateVargaLongitude(long, vargaFactor) {
             let norm = (long % 360 + 360) % 360;
             let signIdx = Math.floor(norm / 30);
@@ -675,8 +756,8 @@
             calculateAshtakavarga(currentLongitudes, activeVargaLagna);
             renderSelectedChartType();
             
-            const vargaLagnaSign = ZODIAC_SIGNS[Math.floor(activeVargaLagna / 30)];
-            statusDisplay.innerText = `Viewing ${vargaCode} Chart (Varga Lagna: ${vargaLagnaSign})`;
+            const vargaLagnaSign = TRANSLATIONS[currentLang].zodiac[Math.floor(activeVargaLagna / 30)];
+            statusDisplay.innerText = `${vargaCode} Lagna: ${vargaLagnaSign}`;
         }
 
         function switchChartFormat(style) {
@@ -717,9 +798,9 @@
             }
         }
 
-        // --- DIGNITY EVALUATION MATRIX ---
         function evaluateDignity(pName, long) {
             let signIdx = Math.floor((long % 360 + 360) % 360 / 30);
+            const t = TRANSLATIONS[currentLang];
             
             const exaltationMap = { "sun": 0, "moon": 1, "mars": 9, "mercury": 5, "jupiter": 3, "venus": 11, "saturn": 6, "rahu": 2, "ketu": 8 };
             const debilitationMap = { "sun": 6, "moon": 7, "mars": 3, "mercury": 11, "jupiter": 9, "venus": 5, "saturn": 0, "rahu": 8, "ketu": 2 };
@@ -728,15 +809,16 @@
                 "jupiter": [8, 11], "venus": [1, 6], "saturn": [9, 10], "rahu": [10], "ketu": [7]
             };
 
-            if (exaltationMap[pName] === signIdx) return { text: "Exalted (Ucca)", color: "text-emerald-400 bg-emerald-950/80 border-emerald-500/50" };
-            if (debilitationMap[pName] === signIdx) return { text: "Debilitated (Nica)", color: "text-rose-400 bg-rose-950/80 border-rose-500/50" };
-            if (ownSignMap[pName] && ownSignMap[pName].includes(signIdx)) return { text: "Own Sign (Svaksetra)", color: "text-amber-300 bg-amber-950/80 border-amber-500/50" };
-            return { text: "Neutral (Sama)", color: "text-slate-300 bg-slate-900 border-slate-700" };
+            if (exaltationMap[pName] === signIdx) return { text: t.exalted, color: "text-emerald-400 bg-emerald-950/80 border-emerald-500/50" };
+            if (debilitationMap[pName] === signIdx) return { text: t.debilitated, color: "text-rose-400 bg-rose-950/80 border-rose-500/50" };
+            if (ownSignMap[pName] && ownSignMap[pName].includes(signIdx)) return { text: t.ownSign, color: "text-amber-300 bg-amber-950/80 border-amber-500/50" };
+            return { text: t.neutral, color: "text-slate-300 bg-slate-900 border-slate-700" };
         }
 
         function populateDignityTable(positions) {
             const tbody = document.getElementById('dignity-tbody');
             tbody.innerHTML = "";
+            const planetTrans = TRANSLATIONS[currentLang].planets;
 
             Object.entries(positions).forEach(([pName, long]) => {
                 const dignity = evaluateDignity(pName, long);
@@ -744,7 +826,7 @@
                 tr.className = "hover:bg-slate-900/50 transition";
                 
                 tr.innerHTML = `
-                    <td class="p-2 font-bold uppercase text-cyan-200">${PLANET_CONFIGS[pName].label}</td>
+                    <td class="p-2 font-bold uppercase text-cyan-200">${planetTrans[pName] || pName}</td>
                     <td class="p-2">${getZodiacCoordinateString(long)}</td>
                     <td class="p-2 text-amber-300">${getNakshatraPadaString(long)}</td>
                     <td class="p-2 text-center">
@@ -762,7 +844,7 @@
         const SOLAR_YEAR_MS = 365.242199 * 24 * 3600 * 1000;
 
         function buildSubDashas(parentLordIdx, parentStartMs, parentDurationMs, depth) {
-            if (depth > 4) return null; // 0: MD, 1: AD, 2: PD, 3: SD, 4: PR
+            if (depth > 4) return null;
 
             let subTree = [];
             let currentStart = parentStartMs;
@@ -841,6 +923,7 @@
             const grid = document.getElementById('dasha-grid');
             const title = document.getElementById('dasha-level-title');
             const breadcrumb = document.getElementById('breadcrumb-content');
+            const pTrans = TRANSLATIONS[currentLang].planets;
 
             grid.innerHTML = "";
 
@@ -849,13 +932,13 @@
 
             pathIndices.forEach((idx) => {
                 if (currentNodes && currentNodes[idx]) {
-                    pathNames.push(currentNodes[idx].lord.toUpperCase());
+                    pathNames.push((pTrans[currentNodes[idx].lord] || currentNodes[idx].lord).toUpperCase());
                     currentNodes = currentNodes[idx].sub;
                 }
             });
 
             if (pathNames.length === 0) {
-                breadcrumb.innerHTML = `<span class="text-amber-300">Mahadasha List</span>`;
+                breadcrumb.innerHTML = `<span class="text-amber-300">${TRANSLATIONS[currentLang].selectMahadasha}</span>`;
             } else {
                 let breadcrumbHTML = `<button onclick="navigateDashaLevel([], 'Mahadasha')" class="hover:underline text-cyan-300 font-bold">Mahadasha</button>`;
                 pathNames.forEach((name, i) => {
@@ -866,7 +949,7 @@
                 breadcrumb.innerHTML = breadcrumbHTML;
             }
 
-            title.innerText = `Select ${levelName} ${pathNames.length > 0 ? `for (${pathNames.join(' › ')})` : ''}`;
+            title.innerText = `${levelName} ${pathNames.length > 0 ? `(${pathNames.join(' › ')})` : ''}`;
 
             if (!currentNodes) return;
 
@@ -874,7 +957,7 @@
                 const btn = document.createElement('button');
                 btn.className = "bg-slate-900 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 p-2 rounded-xl text-left transition flex flex-col justify-between shadow-sm group";
 
-                const lordLabel = node.lord.substring(0, 3).toUpperCase();
+                const lordLabel = (pTrans[node.lord] || node.lord).toUpperCase();
                 const startStr = formatDatePrecision(node.start, pathIndices.length);
                 const endStr = formatDatePrecision(node.end, pathIndices.length);
 
@@ -900,13 +983,13 @@
             });
         }
 
-        // --- ASPECT LASER SYSTEM FOR ALL CHARTS ---
         function drawPlanetaryAspects(pName, sourceLong) {
             aspectLinesLayer.innerHTML = "";
             if (!pName || !PLANET_ASPECTS[pName]) return;
 
             const cfg = PLANET_CONFIGS[pName];
-            statusDisplay.innerText = `Aspect Lasers Activated: [${pName.toUpperCase()}]`;
+            const pLabel = TRANSLATIONS[currentLang].planets[pName] || pName;
+            statusDisplay.innerText = `Aspect Lasers: [${pLabel.toUpperCase()}]`;
 
             if (currentChartStyle === "western") {
                 const sourceRad = (sourceLong - 90) * (Math.PI / 180);
@@ -973,7 +1056,6 @@
             }
         }
 
-        // --- ORB GRAPHICS CREATOR ---
         function createPlanetGraphicElement(cfg) {
             const orbContainer = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
@@ -1052,6 +1134,7 @@
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
             const activeAV = getActiveAVPoints();
+            const zodiacList = TRANSLATIONS[currentLang].zodiac;
 
             for (let i = 0; i < 12; i++) {
                 const angleRad = (i * 30 - 90) * (Math.PI / 180);
@@ -1069,7 +1152,7 @@
                 text.setAttribute("x", tx); text.setAttribute("y", ty);
                 text.setAttribute("fill", "#fffdf0"); text.setAttribute("filter", "url(#neon-glow-amber)");
                 text.setAttribute("font-size", "11"); text.setAttribute("font-weight", "900"); text.setAttribute("text-anchor", "middle"); text.setAttribute("dominant-baseline", "central");
-                text.textContent = ZODIAC_SIGNS[i].substring(0, 3).toUpperCase();
+                text.textContent = zodiacList[i].substring(0, 4);
                 houseLinesGroup.appendChild(text);
 
                 let houseNumber = ((i - lagnaSignIdx + 12) % 12) + 1;
@@ -1082,7 +1165,6 @@
                 hText.textContent = `H${houseNumber}`;
                 houseLinesGroup.appendChild(hText);
 
-                // Ashtakavarga Badge (Placed inside inner band near hub)
                 const avRadius = 90;
                 const avX = center.x + Math.cos(textAngle) * avRadius;
                 const avY = center.y + Math.sin(textAngle) * avRadius;
@@ -1131,6 +1213,8 @@
         }
 
         function renderWesternPlanets(positions) {
+            const planetTrans = TRANSLATIONS[currentLang].planets;
+
             Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
                 const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 group.setAttribute("id", `${name}-group`); group.setAttribute("class", "interactive-planet");
@@ -1153,7 +1237,7 @@
                 const hudGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 hudGroup.setAttribute("id", `${name}-hud`);
                 const nameText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                nameText.setAttribute("class", "hud-text font-black"); nameText.textContent = cfg.label;
+                nameText.setAttribute("class", "hud-text font-black"); nameText.textContent = planetTrans[name] || name;
                 const degText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 degText.setAttribute("id", `${name}-hud-deg`); degText.setAttribute("dy", "14"); degText.setAttribute("class", "hud-text font-medium"); degText.setAttribute("fill", "#38bdf8");
                 const nakText = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -1242,6 +1326,7 @@
 
             const lagnaSignIdx = Math.floor(ascDegree / 30);
             const activeAV = getActiveAVPoints();
+            const zodiacList = TRANSLATIONS[currentLang].zodiac;
 
             gridCoords.forEach(item => {
                 const x = left + item.col * box; const y = top + item.row * box;
@@ -1252,23 +1337,20 @@
 
                 const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 signText.setAttribute("x", x + 8); signText.setAttribute("y", y + 16);
-                signText.setAttribute("fill", "#38bdf8"); signText.setAttribute("font-size", "12"); signText.setAttribute("font-weight", "800");
-                signText.textContent = ZODIAC_SIGNS[item.s].substring(0, 3).toUpperCase();
+                signText.setAttribute("fill", "#38bdf8"); signText.setAttribute("font-size", "11"); signText.setAttribute("font-weight", "800");
+                signText.textContent = zodiacList[item.s].substring(0, 4);
                 baseChartLayer.appendChild(signText);
 
                 if (item.s === lagnaSignIdx) {
                     const lText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     lText.setAttribute("x", x + box - 8); lText.setAttribute("y", y + 16);
-                    lText.setAttribute("fill", "#fde047"); lText.setAttribute("font-size", "12"); lText.setAttribute("font-weight", "900"); lText.setAttribute("text-anchor", "end");
+                    lText.setAttribute("fill", "#fde047"); lText.setAttribute("font-size", "11"); lText.setAttribute("font-weight", "900"); lText.setAttribute("text-anchor", "end");
                     lText.textContent = "ASC";
                     baseChartLayer.appendChild(lText);
                 }
 
-                // Outer House Numbers for South Indian Chart
                 const houseNum = ((item.s - lagnaSignIdx + 12) % 12) + 1;
-                let labelX = x + box / 2;
-                let labelY = y + box / 2;
-                let anchor = "middle";
+                let labelX = x + box / 2; let labelY = y + box / 2; let anchor = "middle";
 
                 if (item.row === 0) labelY = top - 12;
                 else if (item.row === 3) labelY = top + size + 20;
@@ -1276,14 +1358,11 @@
                 else if (item.col === 3) { labelX = left + size + 18; anchor = "start"; labelY += 4; }
 
                 const outerNumText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                outerNumText.setAttribute("x", labelX);
-                outerNumText.setAttribute("y", labelY);
-                outerNumText.setAttribute("text-anchor", anchor);
-                outerNumText.setAttribute("class", "outer-house-num");
+                outerNumText.setAttribute("x", labelX); outerNumText.setAttribute("y", labelY);
+                outerNumText.setAttribute("text-anchor", anchor); outerNumText.setAttribute("class", "outer-house-num");
                 outerNumText.textContent = `H${houseNum}`;
                 baseChartLayer.appendChild(outerNumText);
 
-                // Ashtakavarga Badge (Bottom-Right Corner)
                 drawAVBadge(x + box - 20, y + box - 16, activeAV[item.s]);
             });
 
@@ -1293,6 +1372,8 @@
                 const sIdx = Math.floor(long / 30);
                 signPlanets[sIdx].push({ name: pName, long });
             });
+
+            const planetTrans = TRANSLATIONS[currentLang].planets;
 
             gridCoords.forEach(item => {
                 const x = left + item.col * box; const y = top + item.row * box;
@@ -1315,7 +1396,7 @@
                     const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     txt.setAttribute("x", px); txt.setAttribute("y", py + 18);
                     txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "11"); txt.setAttribute("font-weight", "900"); txt.setAttribute("text-anchor", "middle");
-                    txt.textContent = cfg.label;
+                    txt.textContent = planetTrans[pObj.name] || pObj.name;
                     pGroup.appendChild(txt);
 
                     const subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -1369,6 +1450,8 @@
                 housePlanets[houseNum].push({ name: pName, long });
             });
 
+            const planetTrans = TRANSLATIONS[currentLang].planets;
+
             houseCenters.forEach(item => {
                 const signIdx = (lagnaSignIdx + item.h - 1) % 12;
                 const signNum = signIdx + 1;
@@ -1379,7 +1462,6 @@
                 signText.textContent = signNum;
                 baseChartLayer.appendChild(signText);
 
-                // Ashtakavarga Badge
                 drawAVBadge(item.x, item.y + 35, activeAV[signIdx]);
 
                 const pList = housePlanets[item.h];
@@ -1400,7 +1482,7 @@
                     const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
                     txt.setAttribute("x", px); txt.setAttribute("y", py + 18);
                     txt.setAttribute("fill", "#ffffff"); txt.setAttribute("font-size", "11"); txt.setAttribute("font-weight", "900"); txt.setAttribute("text-anchor", "middle");
-                    txt.textContent = cfg.label;
+                    txt.textContent = planetTrans[pObj.name] || pObj.name;
                     pGroup.appendChild(txt);
 
                     const subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
