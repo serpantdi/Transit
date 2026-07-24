@@ -77,6 +77,11 @@
         .hud-text { font-size: 12px; font-weight: 800; fill: #ffffff; font-family: 'Space Grotesk', sans-serif; }
         @media (max-width: 768px) { .hud-text { font-size: 14px; } }
         .aspect-laser { opacity: 0.95; stroke-width: 3; stroke-linecap: round; pointer-events: none; }
+
+        /* Ashtakavarga Badge Styles */
+        .av-badge rect { fill: #ea580c; rx: 8px; ry: 8px; }
+        .av-badge text { fill: #ffffff; font-size: 10px; font-weight: 900; text-anchor: middle; dominant-baseline: central; }
+        .outer-house-num { font-size: 12px; fill: #94a3b8; font-weight: 900; }
     </style>
 </head>
 <body class="text-slate-100 p-2">
@@ -132,7 +137,7 @@
         <div id="chart-meta-info" class="text-xs font-bold text-slate-300 mb-2"></div>
         
         <!-- Controls Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 my-1 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 my-1 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
             <!-- Format Selector Buttons -->
             <div class="flex justify-center items-center gap-1">
                 <button type="button" onclick="switchChartFormat('western')" id="btn-western" class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-cyan-500 text-slate-950 shadow">Western Wheel</button>
@@ -161,6 +166,12 @@
                     <option value="D45">D45 - Akshavedamsa (General Conduct)</option>
                     <option value="D60">D60 - Shashtiamsa (Past Life Karma)</option>
                 </select>
+            </div>
+
+            <!-- Ashtakavarga Toggle Control -->
+            <div class="flex justify-center items-center gap-2">
+                <input type="checkbox" id="toggleAV" onchange="toggleAshtakavarga(this.checked)" class="w-4 h-4 accent-cyan-400 cursor-pointer">
+                <label for="toggleAV" class="text-xs font-bold text-cyan-400 uppercase cursor-pointer select-none">Show Ashtakavarga</label>
             </div>
         </div>
 
@@ -252,6 +263,7 @@
             <g id="pointer-lines-layer"></g>
             <g id="planets-layer"></g>
             <g id="external-hud-layer"></g>
+            <g id="ashtakavarga-layer"></g>
         </svg>
     </div>
 
@@ -308,6 +320,7 @@
         const aspectLinesLayer = document.getElementById('aspect-lines-layer');
         const externalHudLayer = document.getElementById('external-hud-layer');
         const lagnaLayer = document.getElementById('lagna-highlight-layer');
+        const ashtakavargaLayer = document.getElementById('ashtakavarga-layer');
         const earthCenter = document.getElementById('earth-center');
         const chart = document.getElementById('chart');
 
@@ -315,6 +328,37 @@
         let dynamicLabelRadius = 285;
         let currentChartStyle = "western"; // "western", "south", or "north"
         let activeVarga = "D1"; // Active Varga Chart
+        let showAshtakavarga = false; // Ashtakavarga visibility toggle
+
+        // Mock Ashtakavarga Scores (SAV points 0-48 per sign index 0..11)
+        const sampleAVPoints = [30, 28, 32, 24, 19, 27, 31, 22, 29, 35, 26, 34];
+
+        function toggleAshtakavarga(enabled) {
+            showAshtakavarga = enabled;
+            renderSelectedChartType();
+        }
+
+        function drawAVBadge(x, y, points) {
+            if (!showAshtakavarga) return;
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            g.setAttribute("class", "av-badge");
+            g.setAttribute("transform", `translate(${x}, ${y})`);
+
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", "-13");
+            rect.setAttribute("y", "-8");
+            rect.setAttribute("width", "26");
+            rect.setAttribute("height", "16");
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", "0");
+            text.setAttribute("y", "1");
+            text.textContent = points;
+
+            g.appendChild(rect);
+            g.appendChild(text);
+            ashtakavargaLayer.appendChild(g);
+        }
 
         function adaptViewportDimensions() {
             if (window.innerWidth > 768) {
@@ -515,6 +559,7 @@
             externalHudLayer.innerHTML = "";
             aspectLinesLayer.innerHTML = "";
             lagnaLayer.innerHTML = "";
+            ashtakavargaLayer.innerHTML = "";
             planetPositionsMap = {};
 
             let renderLagna = (activeVarga === "D1") ? lagnaLongitude : activeVargaLagna;
@@ -896,6 +941,12 @@
                 hText.setAttribute("text-anchor", "middle"); hText.setAttribute("dominant-baseline", "central");
                 hText.textContent = `H${houseNumber}`;
                 houseLinesGroup.appendChild(hText);
+
+                // Ashtakavarga Badge (Placed inside inner band near hub)
+                const avRadius = 90;
+                const avX = center.x + Math.cos(textAngle) * avRadius;
+                const avY = center.y + Math.sin(textAngle) * avRadius;
+                drawAVBadge(avX, avY, sampleAVPoints[i]);
             }
 
             Object.entries(PLANET_CONFIGS).forEach(([name, cfg]) => {
@@ -1071,6 +1122,28 @@
                     lText.textContent = "ASC";
                     baseChartLayer.appendChild(lText);
                 }
+
+                // Outer House Numbers for South Indian Chart
+                const houseNum = ((item.s - lagnaSignIdx + 12) % 12) + 1;
+                let labelX = x + box / 2;
+                let labelY = y + box / 2;
+                let anchor = "middle";
+
+                if (item.row === 0) labelY = top - 12;
+                else if (item.row === 3) labelY = top + size + 20;
+                else if (item.col === 0) { labelX = left - 18; anchor = "end"; labelY += 4; }
+                else if (item.col === 3) { labelX = left + size + 18; anchor = "start"; labelY += 4; }
+
+                const outerNumText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                outerNumText.setAttribute("x", labelX);
+                outerNumText.setAttribute("y", labelY);
+                outerNumText.setAttribute("text-anchor", anchor);
+                outerNumText.setAttribute("class", "outer-house-num");
+                outerNumText.textContent = `H${houseNum}`;
+                baseChartLayer.appendChild(outerNumText);
+
+                // Ashtakavarga Badge (Bottom-Right Corner)
+                drawAVBadge(x + box - 20, y + box - 16, sampleAVPoints[item.s]);
             });
 
             const signPlanets = {};
@@ -1155,13 +1228,17 @@
             });
 
             houseCenters.forEach(item => {
-                const signNum = ((lagnaSignIdx + item.h - 1) % 12) + 1;
+                const signIdx = (lagnaSignIdx + item.h - 1) % 12;
+                const signNum = signIdx + 1;
 
                 const signText = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 signText.setAttribute("x", item.x); signText.setAttribute("y", item.y - 25);
                 signText.setAttribute("fill", "#fbbf24"); signText.setAttribute("font-size", "13"); signText.setAttribute("font-weight", "900"); signText.setAttribute("text-anchor", "middle");
                 signText.textContent = signNum;
                 baseChartLayer.appendChild(signText);
+
+                // Ashtakavarga Badge
+                drawAVBadge(item.x, item.y + 35, sampleAVPoints[signIdx]);
 
                 const pList = housePlanets[item.h];
                 pList.forEach((pObj, pIdx) => {
