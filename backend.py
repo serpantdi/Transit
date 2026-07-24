@@ -24,6 +24,103 @@ PLANET_MAP = {
     "rahu": swe.MEAN_NODE  # Mean Node for consistent calculations
 }
 
+# --- Parashari Ashtakavarga Engine Data & Logic ---
+
+AV_RULES = {
+    "sun": {
+        "sun": [1, 2, 4, 7, 8, 9, 10, 11],
+        "moon": [3, 6, 10, 11],
+        "mars": [1, 2, 4, 7, 8, 9, 10, 11],
+        "mercury": [3, 5, 6, 9, 10, 11, 12],
+        "jupiter": [5, 6, 9, 11],
+        "venus": [6, 7, 12],
+        "saturn": [1, 2, 4, 7, 8, 9, 10, 11],
+        "lagna": [3, 4, 6, 10, 11, 12]
+    },
+    "moon": {
+        "sun": [3, 6, 7, 8, 10, 11],
+        "moon": [1, 3, 6, 7, 10, 11],
+        "mars": [2, 3, 5, 6, 9, 10, 11],
+        "mercury": [1, 3, 4, 5, 7, 8, 10, 11],
+        "jupiter": [1, 4, 7, 8, 10, 11, 12],
+        "venus": [3, 4, 5, 7, 9, 10, 11],
+        "saturn": [3, 5, 6, 11],
+        "lagna": [3, 6, 10, 11]
+    },
+    "mars": {
+        "sun": [3, 5, 6, 10, 11],
+        "moon": [3, 6, 11],
+        "mars": [1, 2, 4, 7, 8, 9, 10, 11],
+        "mercury": [3, 5, 6, 11],
+        "jupiter": [6, 10, 11, 12],
+        "venus": [6, 8, 11, 12],
+        "saturn": [1, 4, 7, 8, 9, 10, 11],
+        "lagna": [1, 3, 6, 10, 11]
+    },
+    "mercury": {
+        "sun": [5, 6, 9, 11, 12],
+        "moon": [2, 4, 6, 8, 10, 11],
+        "mars": [1, 2, 4, 7, 8, 9, 10, 11],
+        "mercury": [1, 3, 5, 6, 9, 10, 11, 12],
+        "jupiter": [6, 8, 11, 12],
+        "venus": [1, 2, 3, 4, 5, 8, 9, 11],
+        "saturn": [1, 2, 4, 7, 8, 9, 10, 11],
+        "lagna": [1, 2, 4, 6, 8, 10, 11]
+    },
+    "jupiter": {
+        "sun": [1, 2, 3, 4, 7, 8, 9, 10, 11],
+        "moon": [2, 5, 7, 9, 11],
+        "mars": [1, 2, 4, 7, 8, 10, 11],
+        "mercury": [1, 2, 4, 5, 6, 9, 10, 11],
+        "jupiter": [1, 2, 3, 4, 7, 8, 10, 11],
+        "venus": [2, 5, 6, 9, 10, 11],
+        "saturn": [3, 5, 6, 12],
+        "lagna": [1, 2, 4, 5, 6, 7, 9, 10, 11]
+    },
+    "venus": {
+        "sun": [8, 11, 12],
+        "moon": [1, 2, 3, 4, 5, 8, 9, 11, 12],
+        "mars": [3, 5, 6, 9, 11, 12],
+        "mercury": [3, 5, 6, 9, 11],
+        "jupiter": [5, 8, 9, 10, 11],
+        "venus": [1, 2, 3, 4, 5, 8, 9, 10, 11],
+        "saturn": [3, 4, 5, 8, 9, 10, 11],
+        "lagna": [1, 2, 3, 4, 5, 8, 9, 11]
+    },
+    "saturn": {
+        "sun": [1, 2, 4, 7, 8, 10, 11],
+        "moon": [3, 6, 11],
+        "mars": [3, 5, 6, 10, 11, 12],
+        "mercury": [6, 8, 9, 10, 11, 12],
+        "jupiter": [5, 6, 11, 12],
+        "venus": [6, 11, 12],
+        "saturn": [3, 5, 6, 11],
+        "lagna": [1, 3, 4, 6, 10, 11]
+    }
+}
+
+def calculate_ashtakavarga(positions: dict, ascendant_long: float):
+    """Calculates Bhinna Ashtakavarga (BAV) and Samudaya Ashtakavarga (SAV)."""
+    sign_positions = {p: int(positions[p] // 30) for p in AV_RULES["sun"].keys() if p in positions}
+    sign_positions["lagna"] = int(ascendant_long // 30)
+
+    bav = {p: [0] * 12 for p in AV_RULES.keys()}
+    sav = [0] * 12
+
+    for target_planet, contributors in AV_RULES.items():
+        for contributor, houses in contributors.items():
+            if contributor in sign_positions:
+                ref_sign = sign_positions[contributor]
+                for h in houses:
+                    sign_idx = (ref_sign + h - 1) % 12
+                    bav[target_planet][sign_idx] += 1
+
+    for planet_points in bav.values():
+        for i in range(12):
+            sav[i] += planet_points[i]
+
+    return {"bav": bav, "sav": sav}
+
 # --- HTML Page Routes ---
 
 @app.get("/", response_class=HTMLResponse)
@@ -131,6 +228,9 @@ def calculate_birth_chart(
         cusps, ascmc = swe.houses_ex(jd_utc, lat, lon, b'E', swe.FLG_SIDEREAL)
         ascendant_long = round(ascmc[0], 2)
         
+        # Calculate Ashtakavarga
+        av_results = calculate_ashtakavarga(positions, ascendant_long)
+
         return {
             "status": "success",
             "name": name,
@@ -138,7 +238,9 @@ def calculate_birth_chart(
             "tob": tob,
             "location": location_name,
             "ascendant": ascendant_long,
-            "positions": positions
+            "positions": positions,
+            "sav": av_results["sav"],
+            "bav": av_results["bav"]
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
